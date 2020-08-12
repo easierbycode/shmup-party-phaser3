@@ -1,0 +1,20 @@
+{
+  "name": "shmup.party",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "rimraf docs && parcel build src/index.html --out-dir docs --public-url /shmup-party-phaser3/",
+    "build:android": "rimraf www && parcel build src/index.html --out-dir www --public-url /android_asset/www/ && cordova build android",
+    "dev": "rimraf www && parcel src/index.html --out-dir www",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "phaser": "^3.24.1"
+  },
+  "devDependencies": {
+    "typescript": "^3.9.7"
+  }
+}
