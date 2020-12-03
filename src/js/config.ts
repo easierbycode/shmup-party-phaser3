@@ -4,8 +4,8 @@ import { WeaponPlugin } from './weapon-plugin';
 
 
 export var config : Phaser.Types.Core.GameConfig = {
-    width: 1024,
-    height: 576,
+    width: 1280,
+    height: 768,
     scene: Scene1,
     render: {
         pixelArt: true,
