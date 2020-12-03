@@ -1,12 +1,15 @@
 
 import Scene1 from './Scene1.ts';
+import { WeaponPlugin } from './weapon-plugin';
 
 
 export var config : Phaser.Types.Core.GameConfig = {
-    width: 683,
-    height: 384,
+    width: 1024,
+    height: 576,
     scene: Scene1,
-    pixelArt: true,
+    render: {
+        pixelArt: true,
+    },
     scale: {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH
@@ -16,6 +19,11 @@ export var config : Phaser.Types.Core.GameConfig = {
         arcade: {
             debug: false
         }
+    },
+    plugins: {
+        scene: [
+            { key: 'WeaponPlugin', plugin: WeaponPlugin, mapping: 'weapons' }
+        ]
     },
     input: {
         gamepad: true

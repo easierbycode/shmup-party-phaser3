@@ -1,21 +1,32 @@
 
-export default class Player extends Phaser.GameObjects.Sprite {
+import BaseEntity from "./base-entity";
+import PacmanBullet from "./pacman-bullet";
+import { Weapon } from './weapon-plugin';
+
+
+export default class Player extends BaseEntity {
+    
+    currentWeapon       = 0;
+    weapons: Weapon[]   = [];
     
     constructor( gamepad, scene: Phaser.Scene, x: number, y: number, key: string = 'player' ) {
         super( scene, x, y, key );
 
-        scene.physics.world.enableBody( this );
-
         this.body.setCollideWorldBounds( true );
 
-        scene.add.existing( this );
-        
         this.gamepad    = gamepad;
+
+        this.weapons.push( new PacmanBullet( this, scene ) );
     }
 
-    update() {
-        this.body.velocity.x        = 0;
-        this.body.velocity.y        = 0;
+    get bullets() {
+        return this.weapons[ this.currentWeapon ].bullets;
+    }
+
+    preUpdate( time, delta ) {
+        super.preUpdate( time, delta );
+
+        this.body.stop();
 
         if ( this.gamepad.left || this.gamepad.leftStick.x < -0.1 ) {
             this.body.velocity.x    = -150;
@@ -34,18 +45,20 @@ export default class Player extends Phaser.GameObjects.Sprite {
                 
         if ( thumbstickAngle !== null ) {
             this.rotation   = thumbstickAngle;
+            this.weapons[ this.currentWeapon ].fire( this.getRightCenter() );
         }
     }
 
     coordinatesToRadians( x, y ) {
-        if (x === 0 && y === 0) {
+        if ( x === 0 && y === 0 ) {
             return null;
         }
 
-        let radians = Math.atan2(y, x);
-        if (radians < 0) {
+        let radians = Math.atan2( y, x );
+        if ( radians < 0 ) {
             radians += 2 * Math.PI;
         }
-        return Math.abs(radians);
+        return Math.abs( radians );
     }
+
 }
