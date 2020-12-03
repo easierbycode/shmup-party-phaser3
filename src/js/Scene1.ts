@@ -10,6 +10,11 @@ const files = [
         type: 'image',
         key: 'logo',
         url: 'assets/images/shmup-party-logo.png'
+    },
+    {
+        type: 'image',
+        key: 'loader',
+        url: 'assets/images/loader.png'
     }
 ];
 
@@ -25,9 +30,13 @@ export default class Scene1 extends Phaser.Scene {
 
     init( data ) {
         this.add.sprite( config.width / 2, config.height / 2, 'logo' );
+        this.loadingBar = this.add.sprite( config.width / 2, config.height / 2 + 128, 'loader' );
     }
 
     preload() {
+        this.load.on('progress', ( value ) => {
+            this.loadingBar.setScale( value, 1 );
+        });
         this.load.image( 
             'bg', 
             require( '../assets/images/scorched-earth.png' ) 
