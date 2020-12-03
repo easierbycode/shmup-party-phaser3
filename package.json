@@ -12,6 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "assets": "^3.0.1",
     "cordova": "^10.0.0",
     "cordova-android": "^8.1.0",
     "phaser": "^3.24.1"
@@ -19,6 +20,7 @@
   "devDependencies": {
     "cordova-plugin-whitelist": "^1.3.4",
     "cssnano": "^4.1.10",
+    "parcel-plugin-static-files-copy": "^2.5.0",
     "typescript": "^3.9.7"
   },
   "cordova": {
@@ -28,5 +30,9 @@
     "platforms": [
       "android"
     ]
+  },
+  "staticFiles": {
+    "staticPath": "public",
+    "watcherGlob": "**"
   }
 }
