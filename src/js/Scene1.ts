@@ -5,11 +5,26 @@ import Phaser from 'phaser';
 import Zombie from './zombie';
 import Alien from './alien';
 
+const files = [
+    {
+        type: 'image',
+        key: 'logo',
+        url: 'assets/images/shmup-party-logo.png'
+    }
+];
+
 
 export default class Scene1 extends Phaser.Scene {
 
     constructor() {
-        super({ key: 'Scene1' });
+        super({ 
+            key: 'Scene1',
+            pack: { files }
+        });
+    }
+
+    init( data ) {
+        this.add.sprite( config.width / 2, config.height / 2, 'logo' );
     }
 
     preload() {
