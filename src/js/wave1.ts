@@ -5,7 +5,6 @@ export default {
     ZOMBIES   : 88,
 
     createBaddies : function( scene ) {
-        console.log( 'createBaddies')
         for ( let i = 0; i < this.ALIENS; i++ ) {
             let alien = scene.aliens.get(
                 Phaser.Math.Between( -72, 1352 ),

@@ -1,0 +1,3 @@
+NOW
+===
+- set pacman-bullet body to circle
