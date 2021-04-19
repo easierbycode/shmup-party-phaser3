@@ -69,7 +69,7 @@ export default class Scene1 extends Phaser.Scene {
     }
 
     create() {
-        this.player;
+        this.players = this.add.container().setDepth(1);
 
         this.add.tileSprite( 0, 0, 2000, 2000, 'bg' ).setOrigin( 0 );
 
@@ -79,19 +79,21 @@ export default class Scene1 extends Phaser.Scene {
         this.zombies = this.physics.add.group({ classType: Zombie });
         this.aliens = this.physics.add.group({ classType: Alien });
 
-        this.input.gamepad.once( 'down', ( gamepad, btn, idx ) => {
-            this.player = new Player( 
+        window.addEventListener( 'gamepadconnected', ( gamepadEvent ) => {
+            let gamepad = this.input.gamepad.gamepads[gamepadEvent.gamepad.index];
+            
+            let player = new Player( 
                 gamepad, 
                 this, 
                 config.width / 2, 
                 config.height / 2 
             );
 
-            this.cameras.main.startFollow( this.player, true, 0.05, 0.05 );
+            this.cameras.main.startFollow( player, true, 0.05, 0.05 );
 
             this.physics.add.overlap(
                 [this.aliens, this.zombies],
-                this.player.bullets,
+                player.bullets,
                 ( bullet, baddie ) => {
                     if ( !baddie.active ) return;
                     baddie.group.killAndHide( baddie );
@@ -105,6 +107,8 @@ export default class Scene1 extends Phaser.Scene {
                     WAVE1.createBaddies( this );
                 }
             });
+
+            this.players.add(player);
         });
 
         WAVE1.createBaddies( this );

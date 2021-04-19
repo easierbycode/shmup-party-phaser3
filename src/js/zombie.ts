@@ -32,16 +32,20 @@ export default class Zombie extends BaseEntity {
     preUpdate( time, delta ) {
         super.preUpdate( time, delta );
         
-        if ( this.scene.player ) {
+        let activePlayers = this.scene.players.getAll('active', true);
+        
+        if ( activePlayers.length ) {
+            let closestPlayer = this.scene.physics.closest(this, activePlayers);
+
             this.rotation = Phaser.Math.Angle.BetweenPoints(
                 this, 
-                this.scene.player 
+                closestPlayer 
             );
 
-            if ( this.scene.physics.overlap( this, this.scene.player ) ) {
+            if ( this.scene.physics.overlap( this, activePlayers ) ) {
                 this.body.stop();
             } else {
-                this.scene.physics.moveToObject( this, this.scene.player, this.speed );
+                this.scene.physics.moveToObject( this, closestPlayer, this.speed );
             }
         }
     }
