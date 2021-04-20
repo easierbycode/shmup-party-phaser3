@@ -52,6 +52,11 @@ export default class Scene1 extends Phaser.Scene {
             { frameWidth: 72, frameHeight: 72 }
         );
         this.load.spritesheet(
+            'laser',
+            require('../assets/images/laser.png'),
+            { frameWidth: 168, frameHeight: 72 }
+        );
+        this.load.spritesheet(
             'pacman-bullet',
             require('../assets/images/pacman-spritesheet.png'),
             { frameWidth: 32, frameHeight: 32 }
