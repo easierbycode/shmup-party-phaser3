@@ -2,27 +2,31 @@
 import { Bullet, Weapon } from "./weapon-plugin";
 import { KillType } from "./weapon-plugin/consts";
 import { config } from './config';
+const SPRITE_KEY = 'ciga-bullet';
 
 
 class _Bullet extends Bullet {
 
-      constructor( scene, x, y, key = 'pacman-bullet', frame ) {
+      damagePoints = 8;
+
+      constructor( scene, x, y, key = SPRITE_KEY, frame ) {
             super( scene, x, y, key, frame );
-            this.body.setCircle( this.width / 2 );
             this.setData( 'killType', KillType.KILL_WORLD_BOUNDS );
       }
 
-      damage( bullet: _Bullet, entity ) {}
+      damage( bullet: _Bullet, entity ) {
+            super.kill()
+      }
 
 }
 
 
-export default class PacmanBullet extends Weapon {
+export default class CigaBullet extends Weapon {
 
     constructor(
         player: Phaser.Physics.Arcade.Sprite,
         scene: Phaser.Scene,
-        bulletLimit: number = 10,
+        bulletLimit: number = 20,
         key = '',
         frame = '',
         group?: Phaser.GameObjects.Group
@@ -30,15 +34,16 @@ export default class PacmanBullet extends Weapon {
             super( scene, bulletLimit, key, frame );
 
             this.addBulletAnimation(
-                  'pacman-bullet.chomp',
-                  scene.anims.generateFrameNumbers( 'pacman-bullet' ),
-                  12,
+                  `${SPRITE_KEY}.default`,
+                  scene.anims.generateFrameNumbers( SPRITE_KEY ),
+                  8,
                   -1
             )
             
             this.bulletClass  = _Bullet;
-            this.bulletSpeed  = 600;
-            this.fireRate     = 600;
+            this.bulletSpeed  = 350;
+            this.fireRate     = 300;
+            this.bulletAngleOffset = 270;
             this.debugPhysics = config.physics[config.physics.default].debug;
 
             // `this.bullets` exists only after createBullets()
@@ -50,12 +55,13 @@ export default class PacmanBullet extends Weapon {
             this.bullets.createMultipleCallback = ( items ) => {
                   items.forEach( item => {
                         item.setData( 'bulletManager', this );
+                        item.setScale( 2.4 );
                   });
             }
 
             this.bullets.createMultiple({
                   classType: _Bullet,
-                  key: 'pacman-bullet',
+                  key: SPRITE_KEY,
                   repeat: this.bullets.maxSize-1,
                   active: false,
                   visible: false
@@ -63,4 +69,5 @@ export default class PacmanBullet extends Weapon {
 
             this.trackSprite( player, 0, 0, true );
       }
+
 }
