@@ -1,4 +1,5 @@
 
+import Barrier from "./barrier";
 import BaseEntity from "./base-entity";
 import CigaBullet from './ciga-bullet';
 import PacmanBullet from "./pacman-bullet";
@@ -10,6 +11,7 @@ export default class Player extends BaseEntity {
     currentWeapon       = 0;
     gamepad: Phaser.Input.Gamepad.Gamepad;
     gamepadVibration: GamepadHapticActuator | null;
+    inputEnabled: boolean = true;
     scene!: Phaser.Scene;
     weapons: Weapon[]   = [];
     
@@ -30,7 +32,7 @@ export default class Player extends BaseEntity {
 
         this.gamepad.on('down', (idx: number) => {
             // L1 button
-            if (idx == 4)  this.currentWeapon = Phaser.Math.Wrap(this.currentWeapon+1, 0, this.weapons.length);
+            if (idx == 4)  this.barrierDash.fire( this.getRightCenter() );
 
             // R1 button
             if (idx == 5)  this.currentWeapon = Phaser.Math.Wrap(this.currentWeapon-1, 0, this.weapons.length);
@@ -44,6 +46,8 @@ export default class Player extends BaseEntity {
 
         this.weapons.push( new CigaBullet( this, scene ) );
         this.weapons.push( new PacmanBullet( this, scene ) );
+
+        this.barrierDash = new Barrier( this, scene );
     }
 
     get bullets() {
@@ -54,6 +58,8 @@ export default class Player extends BaseEntity {
         super.preUpdate( time, delta );
 
         this.body.stop();
+
+        if ( !this.inputEnabled )  return;
 
         if ( this.gamepad.left || this.gamepad.leftStick.x < -0.1 ) {
             this.body.velocity.x    = -150;

@@ -85,6 +85,11 @@ export default class Scene1 extends Phaser.Scene {
             { frameWidth: 72, frameHeight: 72 }
         );
         this.load.spritesheet(
+            'barrier',
+            require('../assets/images/barrier.png'),
+            { frameWidth: 80, frameHeight: 41 }
+        );
+        this.load.spritesheet(
             'blood-splat',
             require('../assets/images/blood-splat.png'),
             { frameWidth: 137, frameHeight: 136 }
@@ -194,15 +199,24 @@ export default class Scene1 extends Phaser.Scene {
         this.physics.overlap(
             [this.aliens, this.zombies],
             this.players.children.entries[0].bullets,
-            ( bullet, baddie ) => {
-                if ( !baddie.visible || !bullet.visible ) return;
-                bullet.damage( bullet, baddie );
-                baddie.damage( baddie, bullet );                    
-            }
+            collideCallback
         )
 
+        this.physics.overlap(
+            [this.aliens, this.zombies],
+            this.players.children.entries[0].barrierDash.bullets,
+            collideCallback
+        )
+        
         this.players.children.entries[0].bullets.children.each(b=>b.update());
         }
     }
 
+}
+
+
+let collideCallback = ( bullet, baddie ) => {
+    if ( !baddie.visible || !bullet.visible ) return;
+    bullet.damage( bullet, baddie );
+    baddie.damage( baddie, bullet );                    
 }
