@@ -12,15 +12,16 @@ export default class Zombie extends BaseEntity {
 
         this.anims.create({
             key: 'default',
-            frames: scene.anims.generateFrameNumbers( 'zombie-move' ),
+            frames: scene.anims.generateFrameNames( 'zombie-move' ),
             frameRate: 60,
             repeat: -1
         });
-        this.anims.create({
-            key: 'death',
-            frames: scene.anims.generateFrameNumbers( 'zombie-die' ),
-            frameRate: 60
-        });
+        // this.anims.create({
+        //     key: 'death',
+        //     frames: scene.anims.generateFrameNames( 'zombie-die' ),
+        //     frameRate: 60,
+        //     repeat: -1
+        // });
 
         this
             .setOffset( 29, 23 )

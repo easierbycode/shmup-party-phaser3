@@ -114,16 +114,16 @@ export default class Scene1 extends Phaser.Scene {
             require('../assets/images/pacman-spritesheet.png'),
             { frameWidth: 32, frameHeight: 32 }
         );
-        this.load.spritesheet(
+        this.load.atlas(
             'zombie-move',
             require('../assets/images/zombie-move.png'),
-            { frameWidth: 72, frameHeight: 72 }
+            require('../assets/images/zombie-move.json')
         );
-        this.load.spritesheet(
-            'zombie-die',
-            require('../assets/images/zombie-die.png'),
-            { frameWidth: 72, frameHeight: 72 }
-        );
+        // this.load.atlas(
+        //     'zombie-die',
+        //     require('../assets/images/zombie-die.png'),
+        //     require('../assets/images/zombie-die.json')
+        // );
     }
 
     create() {
