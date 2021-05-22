@@ -7,12 +7,20 @@ export default class Zombie extends BaseEntity {
     health  = 8;
     speed   = 60;
 
-    constructor( scene: Phaser.Scene, x, y, key = 'zombie-move' ) {
+    constructor( scene: Phaser.Scene, x, y, key = 'zombie' ) {
         super( scene, x, y, key );
 
         this.anims.create({
             key: 'default',
-            frames: scene.anims.generateFrameNames( 'zombie-move' ),
+            frames: scene.anims.generateFrameNames(
+                'zombie',
+                {
+                    prefix: 'move-',
+                    zeroPad: 4,
+                    start: 1,
+                    end: 64
+                }
+            ),
             frameRate: 60,
             repeat: -1
         });

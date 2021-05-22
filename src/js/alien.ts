@@ -7,12 +7,20 @@ export default class Alien extends BaseEntity {
     health  = 10;
     speed   = 90;
     
-    constructor( scene: Phaser.Scene, x, y, key = 'alien-move' ) {
+    constructor( scene: Phaser.Scene, x, y, key = 'alien' ) {
         super( scene, x, y, key );
 
         this.anims.create({
             key: 'default',
-            frames: scene.anims.generateFrameNumbers( 'alien-move' ),
+            frames: scene.anims.generateFrameNames(
+                'alien',
+                {
+                    prefix: 'move-',
+                    zeroPad: 4,
+                    start: 1,
+                    end: 64
+                }
+            ),
             frameRate: 60,
             repeat: -1
         });

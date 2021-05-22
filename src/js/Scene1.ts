@@ -79,10 +79,10 @@ export default class Scene1 extends Phaser.Scene {
             'player',
             require('../assets/images/trooper.png')
         );
-        this.load.spritesheet(
-            'alien-move',
-            require('../assets/images/alien-move.png'),
-            { frameWidth: 72, frameHeight: 72 }
+        this.load.atlas(
+            'alien',
+            require('../assets/images/alien.png'),
+            require('../assets/images/alien.json')
         );
         this.load.spritesheet(
             'barrier',
@@ -115,9 +115,9 @@ export default class Scene1 extends Phaser.Scene {
             { frameWidth: 32, frameHeight: 32 }
         );
         this.load.atlas(
-            'zombie-move',
-            require('../assets/images/zombie-move.png'),
-            require('../assets/images/zombie-move.json')
+            'zombie',
+            require('../assets/images/zombie.png'),
+            require('../assets/images/zombie.json')
         );
         // this.load.atlas(
         //     'zombie-die',
