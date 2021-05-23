@@ -8,6 +8,7 @@ import { Weapon } from './weapon-plugin';
 
 export default class Player extends BaseEntity {
     
+    _speed              = 3.0;
     currentWeapon       = 0;
     gamepad: Phaser.Input.Gamepad.Gamepad;
     gamepadVibration: GamepadHapticActuator | null;
@@ -23,6 +24,8 @@ export default class Player extends BaseEntity {
         key: string = 'player' 
     ) {
         super( scene, x, y, key );
+
+        scene.add.existing( this );
 
         this.body.setCollideWorldBounds( true );
 
@@ -62,16 +65,16 @@ export default class Player extends BaseEntity {
         if ( !this.inputEnabled )  return;
 
         if ( this.gamepad.left || this.gamepad.leftStick.x < -0.1 ) {
-            this.body.velocity.x    = -150;
+            this.body.velocity.x    = -this.speed;
         } else if ( this.gamepad.right || this.gamepad.leftStick.x > 0.1 ) {
-            this.body.velocity.x    = 150;
+            this.body.velocity.x    = this.speed;
         }
     
         if ( this.gamepad.up || this.gamepad.leftStick.y < -0.1 ) {
-            this.body.velocity.y    = -150;
+            this.body.velocity.y    = -this.speed;
         }
         else if ( this.gamepad.down || this.gamepad.leftStick.y > 0.1 ) {
-            this.body.velocity.y    = 150;
+            this.body.velocity.y    = this.speed;
         }
 
         var thumbstickAngle = this.coordinatesToRadians( this.gamepad.rightStick.x, this.gamepad.rightStick.y );

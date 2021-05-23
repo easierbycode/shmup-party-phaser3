@@ -2,18 +2,18 @@
 import BaseEntity from "./base-entity";
 
 
-export default class Alien extends BaseEntity {
+export default class Lizard extends BaseEntity {
 
+    _speed  = 1.5;
     health  = 200;
-    _speed  = 2.0;
     
-    constructor( scene: Phaser.Scene, x, y, key = 'alien' ) {
+    constructor( scene: Phaser.Scene, x, y, key = 'lizard' ) {
         super( scene, x, y, key );
 
         this.anims.create({
             key: 'default',
             frames: scene.anims.generateFrameNames(
-                'alien',
+                'lizard',
                 {
                     prefix: 'move-',
                     zeroPad: 4,
@@ -26,8 +26,8 @@ export default class Alien extends BaseEntity {
         });
 
         this
-            .setOffset( 22, 20 )
-            .setSize( 24, 32 )
+            // .setOffset( 22, 20 )
+            // .setSize( 24, 32 )
             .play('default');
     }
 

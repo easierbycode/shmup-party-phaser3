@@ -7,6 +7,8 @@ import WAVE1 from './wave1';
 import { config } from './config.ts';
 import PhaserGUIAction from 'phaser3_gui_inspector';
 import BloodSplatter from './blood-splatter';
+import LizardDen from './lizard-den';
+import Lizard from './lizard';
 
 const files = [
     {
@@ -43,6 +45,77 @@ export default class Scene1 extends Phaser.Scene {
         this.load.on('progress', (value) => {
             this.loadingBar.setScale(value, 1);
         });
+
+        this.load.atlas(
+            'alien',
+            require('../assets/images/alien.png'),
+            require('../assets/images/alien.json')
+        );
+        // this.load.atlas(
+        //     'alien-den',
+        //     require('../assets/images/alien-den.png'),
+        //     require('../assets/images/alien-den.json')
+        // );
+        // this.load.atlas(
+        //     'beetle',
+        //     require('../assets/images/beetle.png'),
+        //     require('../assets/images/beetle.json')
+        // );
+        // this.load.atlas(
+        //     'centipede',
+        //     require('../assets/images/centipede.png'),
+        //     require('../assets/images/centipede.json')
+        // );
+        // this.load.atlas(
+        //     'crabfly',
+        //     require('../assets/images/crabfly.png'),
+        //     require('../assets/images/crabfly.json')
+        // );
+        this.load.atlas(
+            'lizard',
+            require('../assets/images/lizard.png'),
+            require('../assets/images/lizard.json')
+        );
+        this.load.atlas(
+            'lizard-den',
+            require('../assets/images/lizard-den.png'),
+            require('../assets/images/lizard-den.json')
+        );
+        // this.load.atlas(
+        //     'player',
+        //     require('../assets/images/trooper.png'),
+        //     require('../assets/images/trooper.json')
+        // );
+        // this.load.atlas(
+        //     'maggot',
+        //     require('../assets/images/maggot.png'),
+        //     require('../assets/images/maggot.json')
+        // );
+        // this.load.atlas(
+        //     'spider-boss',
+        //     require('../assets/images/spider-boss.png'),
+        //     require('../assets/images/spider-boss.json')
+        // );
+        // this.load.atlas(
+        //     'spider-nest',
+        //     require('../assets/images/spider-nest.png'),
+        //     require('../assets/images/spider-nest.json')
+        // );
+        // this.load.atlas(
+        //     'spider1',
+        //     require('../assets/images/spider1.png'),
+        //     require('../assets/images/spider1.json')
+        // );
+        // this.load.atlas(
+        //     'spider2',
+        //     require('../assets/images/spider2.png'),
+        //     require('../assets/images/spider2.json')
+        // );
+        this.load.atlas(
+            'zombie',
+            require('../assets/images/zombie.png'),
+            require('../assets/images/zombie.json')
+        );
         this.load.image(
             'bg',
             require('../assets/images/scorched-earth.png')
@@ -77,12 +150,7 @@ export default class Scene1 extends Phaser.Scene {
         );
         this.load.image(
             'player',
-            require('../assets/images/trooper.png')
-        );
-        this.load.atlas(
-            'alien',
-            require('../assets/images/alien.png'),
-            require('../assets/images/alien.json')
+            require('../assets/images/_trooper.png')
         );
         this.load.spritesheet(
             'barrier',
@@ -114,16 +182,6 @@ export default class Scene1 extends Phaser.Scene {
             require('../assets/images/pacman-spritesheet.png'),
             { frameWidth: 32, frameHeight: 32 }
         );
-        this.load.atlas(
-            'zombie',
-            require('../assets/images/zombie.png'),
-            require('../assets/images/zombie.json')
-        );
-        // this.load.atlas(
-        //     'zombie-die',
-        //     require('../assets/images/zombie-die.png'),
-        //     require('../assets/images/zombie-die.json')
-        // );
     }
 
     create() {
@@ -144,9 +202,11 @@ export default class Scene1 extends Phaser.Scene {
         this.cam = this.cameras.main.setBounds( 0, 0, 2000, 2000 );
         this.cam.setZoom( 2 );
         this.physics.world.setBounds( 0, 0, 2000, 2000 );
-
-        this.zombies = this.physics.add.group({ classType: Zombie });
-        this.aliens = this.physics.add.group({ classType: Alien });
+        
+        this.aliens     = this.physics.add.group({ classType: Alien });
+        this.lizardDens = this.physics.add.group({ classType: LizardDen });
+        this.lizards    = this.physics.add.group({ classType: Lizard });
+        this.zombies    = this.physics.add.group({ classType: Zombie });
 
         let addPlayer = ( gamepad: Phaser.Input.Gamepad.Gamepad ) => {
             this.assignedGamepadIds.push( gamepad.id );
@@ -197,13 +257,13 @@ export default class Scene1 extends Phaser.Scene {
 
         if ( this.players.getLength() ) {
         this.physics.overlap(
-            [this.aliens, this.zombies],
+            [this.aliens, this.lizardDens, this.lizards, this.zombies],
             this.players.children.entries[0].bullets,
             collideCallback
         )
 
         this.physics.overlap(
-            [this.aliens, this.zombies],
+            [this.aliens, this.lizardDens, this.lizards, this.zombies],
             this.players.children.entries[0].barrierDash.bullets,
             collideCallback
         )

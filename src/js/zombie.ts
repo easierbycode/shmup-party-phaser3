@@ -4,8 +4,8 @@ import BaseEntity from "./base-entity";
 
 export default class Zombie extends BaseEntity {
 
-    health  = 8;
-    speed   = 60;
+    _speed  = 1.5;
+    health  = 300;
 
     constructor( scene: Phaser.Scene, x, y, key = 'zombie' ) {
         super( scene, x, y, key );

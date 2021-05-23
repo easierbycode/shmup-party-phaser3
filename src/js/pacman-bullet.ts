@@ -6,6 +6,8 @@ import { config } from './config';
 
 class _Bullet extends Bullet {
 
+      damagePoints = 50;
+
       constructor( scene, x, y, key = 'pacman-bullet', frame ) {
             super( scene, x, y, key, frame );
             this.body.setCircle( this.width / 2 );

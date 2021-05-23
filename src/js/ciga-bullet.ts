@@ -7,7 +7,7 @@ const SPRITE_KEY = 'ciga-bullet';
 
 class _Bullet extends Bullet {
 
-      damagePoints = 8;
+      damagePoints = 100;
 
       constructor( scene, x, y, key = SPRITE_KEY, frame ) {
             super( scene, x, y, key, frame );

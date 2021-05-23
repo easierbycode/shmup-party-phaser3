@@ -8,7 +8,7 @@ const SPRITE_KEY = 'barrier';
 
 class _Bullet extends Bullet {
 
-      damagePoints = 10;
+      damagePoints = 50;
 
       constructor( scene, x, y, key = SPRITE_KEY, frame ) {
             super( scene, x, y, key, frame );

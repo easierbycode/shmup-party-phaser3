@@ -2,7 +2,9 @@ import BloodSplatter from "./blood-splatter";
 
 export default class BaseEntity extends Phaser.Physics.Arcade.Sprite {
     
-    health = 1;
+    _speed      = 1;
+    baseSpeed   = 50;
+    health      = 1;
     
     constructor(
         scene: Phaser.Scene, 
@@ -12,8 +14,11 @@ export default class BaseEntity extends Phaser.Physics.Arcade.Sprite {
     ) {
         super( scene, x, y, key );
 
-        scene.add.existing( this );
         scene.physics.world.enableBody( this );
+    }
+
+    get speed() {
+        return this.baseSpeed * this._speed;
     }
 
     damage( entity: BaseEntity, bullet ) {
@@ -21,17 +26,19 @@ export default class BaseEntity extends Phaser.Physics.Arcade.Sprite {
 
         this.health -= damagePoints;
 
-        if ( this.health <= 0 ) {
-            let {x, y} = this;
-            let bloodSplatters: Phaser.GameObjects.Group = this.scene.bloodSplatters;
-            let bloodSplatter = bloodSplatters.get( x, y ).setVisible( true ).setActive( true );
-            bloodSplatter.on(
-                'animationcomplete-default',
-                () => bloodSplatters.killAndHide( bloodSplatter )
-            );
-            bloodSplatter.play( 'default' );
-            this.group.killAndHide( this );
-        }
+        if ( this.health <= 0 )  this.kill();
+    }
+
+    kill() {
+        let {x, y} = this;
+        let bloodSplatters: Phaser.GameObjects.Group = this.scene.bloodSplatters;
+        let bloodSplatter = bloodSplatters.get( x, y ).setVisible( true ).setActive( true );
+        bloodSplatter.on(
+            'animationcomplete-default',
+            () => bloodSplatters.killAndHide( bloodSplatter )
+        );
+        bloodSplatter.play( 'default' );
+        this.group.killAndHide( this );
     }
 
 }
