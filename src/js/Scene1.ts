@@ -150,7 +150,7 @@ export default class Scene1 extends Phaser.Scene {
         );
         this.load.image(
             'player',
-            require('../assets/images/_trooper.png')
+            require('../assets/images/player.png')
         );
         this.load.spritesheet(
             'barrier',
