@@ -9,6 +9,7 @@ import PhaserGUIAction from 'phaser3_gui_inspector';
 import BloodSplatter from './blood-splatter';
 import LizardDen from './lizard-den';
 import Lizard from './lizard';
+import Pharoah from './pharoah';
 
 const files = [
     {
@@ -173,6 +174,11 @@ export default class Scene1 extends Phaser.Scene {
             { frameWidth: 9, frameHeight: 11 }
         );
         this.load.spritesheet(
+            'fireball',
+            require('../assets/images/fireball.png'),
+            { frameWidth: 41, frameHeight: 51 }
+        );
+        this.load.spritesheet(
             'laser',
             require('../assets/images/laser.png'),
             { frameWidth: 168, frameHeight: 72 }
@@ -181,6 +187,11 @@ export default class Scene1 extends Phaser.Scene {
             'pacman-bullet',
             require('../assets/images/pacman-spritesheet.png'),
             { frameWidth: 32, frameHeight: 32 }
+        );
+        this.load.spritesheet(
+            'pharoah',
+            require('../assets/images/pharoah.png'),
+            { frameWidth: 159, frameHeight: 73 }
         );
     }
 
@@ -206,6 +217,7 @@ export default class Scene1 extends Phaser.Scene {
         this.aliens     = this.physics.add.group({ classType: Alien });
         this.lizardDens = this.physics.add.group({ classType: LizardDen });
         this.lizards    = this.physics.add.group({ classType: Lizard });
+        this.pharoahs   = this.physics.add.group({ classType: Pharoah });
         this.zombies    = this.physics.add.group({ classType: Zombie });
 
         let addPlayer = ( gamepad: Phaser.Input.Gamepad.Gamepad ) => {
@@ -257,13 +269,13 @@ export default class Scene1 extends Phaser.Scene {
 
         if ( this.players.getLength() ) {
         this.physics.overlap(
-            [this.aliens, this.lizardDens, this.lizards, this.zombies],
+            [this.aliens, this.lizardDens, this.lizards, this.pharoahs, this.zombies],
             this.players.children.entries[0].bullets,
             collideCallback
         )
 
         this.physics.overlap(
-            [this.aliens, this.lizardDens, this.lizards, this.zombies],
+            [this.aliens, this.lizardDens, this.lizards, this.pharoahs, this.zombies],
             this.players.children.entries[0].barrierDash.bullets,
             collideCallback
         )

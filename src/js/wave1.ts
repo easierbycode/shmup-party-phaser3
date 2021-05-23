@@ -6,6 +6,7 @@ export default {
 
     ALIENS      : 44,
     LIZARDDENS  : 1,
+    PHAROAHS    : 1,
     ZOMBIES     : 88,
 
     createBaddies : function( scene ) {
@@ -40,6 +41,19 @@ export default {
                 .setActive( true )
                 .setVisible( true )
                 .group = scene.lizardDens;
+        }
+
+
+        for ( let i = 0; i < this.PHAROAHS; i++ ) {
+            let pharoah = scene.pharoahs.get(
+                Phaser.Math.Between( x, x + width ),
+                Phaser.Math.Between( y, y + height )
+            );
+
+            pharoah
+                .setActive( true )
+                .setVisible( true )
+                .group = scene.pharoahs;
         }
 
 
