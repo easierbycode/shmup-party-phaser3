@@ -179,6 +179,11 @@ export default class Scene1 extends Phaser.Scene {
             { frameWidth: 41, frameHeight: 51 }
         );
         this.load.spritesheet(
+            'ion-bullet',
+            require('../assets/images/ion.png'),
+            { frameWidth: 48, frameHeight: 30 }
+        );
+        this.load.spritesheet(
             'laser',
             require('../assets/images/laser.png'),
             { frameWidth: 168, frameHeight: 72 }

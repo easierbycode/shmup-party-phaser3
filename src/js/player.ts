@@ -2,6 +2,7 @@
 import Barrier from "./barrier";
 import BaseEntity from "./base-entity";
 import CigaBullet from './ciga-bullet';
+import IonBullet from "./ion-bullet";
 import PacmanBullet from "./pacman-bullet";
 import { Weapon } from './weapon-plugin';
 
@@ -47,6 +48,7 @@ export default class Player extends BaseEntity {
             if (idx == 9)  this.scene.physics.world.isPaused ? this.scene.physics.resume() : this.scene.physics.pause();
         });
 
+        this.weapons.push( new IonBullet( this, scene ) );
         this.weapons.push( new CigaBullet( this, scene ) );
         this.weapons.push( new PacmanBullet( this, scene ) );
 
