@@ -32,8 +32,8 @@ export default class Zombie extends BaseEntity {
         // });
 
         this
-            .setOffset( 29, 23 )
             .setSize( 19, 26 )
+            .setOffset( 29, 23 )
             .play( 'default' );
     }
 

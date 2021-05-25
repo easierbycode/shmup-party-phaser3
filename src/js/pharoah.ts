@@ -36,8 +36,8 @@ export default class Pharoah extends BaseEntity {
         });
 
         this
-            // .setOffset( 22, 20 )
-            // .setSize( 24, 32 )
+            .setSize( 80, 59 )
+            .setOffset( 39, 0 )
             .play('default');
         
         this.fireball = new PharoahFireball(

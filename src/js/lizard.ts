@@ -26,8 +26,8 @@ export default class Lizard extends BaseEntity {
         });
 
         this
-            // .setOffset( 22, 20 )
-            // .setSize( 24, 32 )
+            .setSize( 24, 26 )
+            .setOffset( 25, 23 )
             .play('default');
     }
 

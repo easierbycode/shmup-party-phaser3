@@ -86,6 +86,11 @@ export default class IonBullet extends Weapon {
             this.bullets.createMultipleCallback = ( items ) => {
                   items.forEach( item => {
                         item.setData( 'bulletManager', this );
+                        item.setOrigin( 0.25, 0.5 );
+                        // item.body.setSize( 22, 18 );
+                        // item.body.setOffset( 4, 6 );
+                        item.body.setSize( 25, 28 );
+                        item.body.setOffset( 1, 1 );
                   });
             }
 

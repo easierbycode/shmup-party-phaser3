@@ -26,8 +26,8 @@ export default class Alien extends BaseEntity {
         });
 
         this
-            .setOffset( 22, 20 )
             .setSize( 24, 32 )
+            .setOffset( 22, 20 )
             .play('default');
     }
 

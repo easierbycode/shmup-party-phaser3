@@ -27,8 +27,8 @@ export default class LizardDen extends BaseEntity {
         });
 
         this
-            // .setOffset( 22, 20 )
-            // .setSize( 24, 32 )
+            .setSize( 55, 55 )
+            .setOffset( 9, 9 )
             .play('default');
         
         this.spawnTimer = scene.time.addEvent({
