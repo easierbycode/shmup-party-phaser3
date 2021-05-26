@@ -4,11 +4,13 @@ import BaseEntity from "./base-entity";
 import CigaBullet from './ciga-bullet';
 import IonBullet from "./ion-bullet";
 import PacmanBullet from "./pacman-bullet";
-import { Weapon } from './weapon-plugin';
+import { Bullet, Weapon } from './weapon-plugin';
+import { BULLET_KILL } from "./weapon-plugin/events";
 
 
 export default class Player extends BaseEntity {
     
+    _previousWeapon     = 0;
     _speed              = 3.0;
     currentWeapon       = 0;
     gamepad: Phaser.Input.Gamepad.Gamepad;
@@ -36,10 +38,10 @@ export default class Player extends BaseEntity {
 
         this.gamepad.on('down', (idx: number) => {
             // L1 button
-            if (idx == 4)  this.barrierDash.fire( this.getRightCenter() );
+            if (idx == 4)  this.barrierDash();
 
             // R1 button
-            if (idx == 5)  this.currentWeapon = Phaser.Math.Wrap(this.currentWeapon-1, 0, this.weapons.length);
+            if (idx == 5)  this.currentWeapon = Phaser.Math.Wrap(this.currentWeapon-1, 0, this.weapons.length-1);
             
             // SELECT button
             if (idx == 8)  this.scene.scene.restart();
@@ -51,12 +53,29 @@ export default class Player extends BaseEntity {
         this.weapons.push( new IonBullet( this, scene ) );
         this.weapons.push( new CigaBullet( this, scene ) );
         this.weapons.push( new PacmanBullet( this, scene ) );
-
-        this.barrierDash = new Barrier( this, scene );
+        this.weapons.push( new Barrier( this, scene ) );
     }
 
     get bullets() {
         return this.weapons[ this.currentWeapon ].bullets;
+    }
+
+    get previousWeapon() {
+        return this._previousWeapon;
+    }
+
+    set previousWeapon( weaponIdx: number ) {
+        if ( weaponIdx != this.weapons.length - 1 )  this._previousWeapon = weaponIdx;
+    }
+
+    barrierDash() {
+        this.previousWeapon = this.currentWeapon;
+        this.currentWeapon = this.weapons.length - 1;
+        this.weapons[ this.currentWeapon ]
+            .once(BULLET_KILL, ( bullet: Bullet, weapon: Weapon ) => {
+                this.currentWeapon = this.previousWeapon;
+            })
+            .fire( this.getRightCenter() );
     }
 
     preUpdate( time, delta ) {
