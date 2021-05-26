@@ -11,7 +11,10 @@ import LizardDen from './lizard-den';
 import Lizard from './lizard';
 import Pharoah from './pharoah';
 
-const files = [
+const ZOOM_LERP = 1; 
+const ZOOM_MAX  = 2;
+const ZOOM_MIN  = 1.0;
+const files     = [
     {
         type: 'image',
         key: 'logo',
@@ -28,6 +31,7 @@ const files = [
 export default class Scene1 extends Phaser.Scene {
 
     assignedGamepadIds: string[] = [];
+    mid: Phaser.Math.Vector2 = new Phaser.Math.Vector2();
     powerups!: Phaser.GameObjects.Group;
 
     constructor() {
@@ -226,9 +230,9 @@ export default class Scene1 extends Phaser.Scene {
         this.add.tileSprite( 0, 0, 2000, 2000, 'bg' ).setOrigin( 0 );
 
         this.cam = this.cameras.main.setBounds( 0, 0, 2000, 2000 );
-        this.cam.setZoom( 2 );
+        this.cam.startFollow( this.mid );
         this.physics.world.setBounds( 0, 0, 2000, 2000 );
-        
+
         this.aliens     = this.physics.add.group({ classType: Alien });
         this.lizardDens = this.physics.add.group({ classType: LizardDen });
         this.lizards    = this.physics.add.group({ classType: Lizard });
@@ -244,8 +248,6 @@ export default class Scene1 extends Phaser.Scene {
                 config.width / 2, 
                 config.height / 2 
             );
-
-            this.cameras.main.startFollow( player, true, 0.05, 0.05 );
 
             this.time.addEvent({
                 delay: 15000,
@@ -281,21 +283,44 @@ export default class Scene1 extends Phaser.Scene {
     }
 
     update() {
-
-        if ( this.players.getLength() ) {
+        let activePlayers = this.players.getMatching( 'active', true );
+        if ( activePlayers.length ) {
+        this.mid.copy( activePlayers[0].body.center );
+        
         this.physics.overlap(
             [this.aliens, this.lizardDens, this.lizards, this.pharoahs, this.zombies],
-            this.players.children.entries[0].bullets,
+            activePlayers[0].bullets,
             collideCallback
         )
 
         this.physics.overlap(
             [this.aliens, this.lizardDens, this.lizards, this.pharoahs, this.zombies],
-            this.players.children.entries[0].barrierDash.bullets,
+            activePlayers[0].barrierDash.bullets,
             collideCallback
         )
         
-        this.players.children.entries[0].bullets.children.each(b=>b.update());
+        activePlayers[0].bullets.children.each( b => b.update() );
+
+        if ( activePlayers.length == 2 ) {
+            this.mid.lerp( activePlayers[1].body.center, 0.5 );
+
+            var dist = Phaser.Math.Distance.BetweenPoints(
+            activePlayers[0].body.position,
+            activePlayers[1].body.position
+            );
+
+            var min = Math.min( this.scale.width, this.scale.height ) / 1.5;
+
+            this.cam.setZoom(
+                Phaser.Math.Linear(
+                    this.cam.zoom,
+                    Phaser.Math.Clamp(min / dist, ZOOM_MIN, ZOOM_MAX),
+                    ZOOM_LERP
+                )
+            );
+        } else {
+            this.cam.setZoom( 2 );
+        }
         }
     }
 
