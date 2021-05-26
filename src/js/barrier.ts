@@ -70,6 +70,7 @@ export default class Barrier extends Weapon {
                         item.setOrigin( 0.25, 0.5 );
                         item.body.setSize( 41, 41 );
                         item.body.setOffset( 1, 1 );
+                        item.setDepth( 2 );
                   });
             }
 
