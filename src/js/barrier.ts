@@ -49,12 +49,13 @@ export default class Barrier extends Weapon {
                   -1
             )
             
-            this.bulletClass    = _Bullet;
-            this.bulletLifespan = 350;
-            this.bulletKillType = KillType.KILL_LIFESPAN;
-            this.bulletSpeed    = 900;
-            this.fireRate       = 1500;
-            this.debugPhysics   = config.physics[config.physics.default].debug;
+            this.bulletClass        = _Bullet;
+            this.bulletAngleOffset  = 180;
+            this.bulletLifespan     = 350;
+            this.bulletKillType     = KillType.KILL_LIFESPAN;
+            this.bulletSpeed        = 900;
+            this.fireRate           = 1500;
+            this.debugPhysics       = config.physics[config.physics.default].debug;
 
             // `this.bullets` exists only after createBullets()
             this.createBullets();
@@ -66,6 +67,9 @@ export default class Barrier extends Weapon {
                   items.forEach( item => {
                         item.setData( 'bulletManager', this );
                         item.setData( 'player', player );
+                        item.setOrigin( 0.25, 0.5 );
+                        item.body.setSize( 41, 41 );
+                        item.body.setOffset( 1, 1 );
                   });
             }
 
