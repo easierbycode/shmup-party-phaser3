@@ -238,11 +238,13 @@ export default class Scene1 extends Phaser.Scene {
         this.cam.startFollow( this.mid );
         this.physics.world.setBounds( 0, 0, 2000, 2000 );
 
-        this.aliens     = this.physics.add.group({ classType: Alien });
-        this.lizardDens = this.physics.add.group({ classType: LizardDen });
-        this.lizards    = this.physics.add.group({ classType: Lizard });
-        this.pharoahs   = this.physics.add.group({ classType: Pharoah });
-        this.zombies    = this.physics.add.group({ classType: Zombie });
+        this.baddies = [
+            this.aliens     = this.physics.add.group({ classType: Alien }),
+            this.lizardDens = this.physics.add.group({ classType: LizardDen }),
+            this.lizards    = this.physics.add.group({ classType: Lizard }),
+            this.pharoahs   = this.physics.add.group({ classType: Pharoah }),
+            this.zombies    = this.physics.add.group({ classType: Zombie })
+        ]
 
         let addPlayer = ( gamepad: Phaser.Input.Gamepad.Gamepad ) => {
             this.assignedGamepadIds.push( gamepad.id );
@@ -289,43 +291,40 @@ export default class Scene1 extends Phaser.Scene {
 
     update() {
         let activePlayers = this.players.getMatching( 'active', true );
+        
         if ( activePlayers.length ) {
-        this.mid.copy( activePlayers[0].body.center );
-        
-        this.physics.overlap(
-            [this.aliens, this.lizardDens, this.lizards, this.pharoahs, this.zombies],
-            activePlayers[0].bullets,
-            collideCallback
-        )
+            let bullets = activePlayers[0].bullets.getMatching( 'visible', true );
+            
+            this.mid.copy( activePlayers[0].body.center );
 
-        this.physics.overlap(
-            [this.aliens, this.lizardDens, this.lizards, this.pharoahs, this.zombies],
-            activePlayers[0].barrierDash.bullets,
-            collideCallback
-        )
-        
-        activePlayers[0].bullets.children.each( b => b.update() );
+            if ( activePlayers.length == 2 ) {
+                bullets.push( ...activePlayers[1].bullets.getMatching( 'visible', true ) );
 
-        if ( activePlayers.length == 2 ) {
-            this.mid.lerp( activePlayers[1].body.center, 0.5 );
+                this.mid.lerp( activePlayers[1].body.center, 0.5 );
 
-            var dist = Phaser.Math.Distance.BetweenPoints(
-            activePlayers[0].body.position,
-            activePlayers[1].body.position
+                var dist = Phaser.Math.Distance.BetweenPoints(
+                    activePlayers[0].body.position,
+                    activePlayers[1].body.position
+                );
+
+                var min = Math.min( this.scale.width, this.scale.height ) / 1.5;
+
+                this.cam.setZoom(
+                    Phaser.Math.Linear(
+                        this.cam.zoom,
+                        Phaser.Math.Clamp(min / dist, ZOOM_MIN, ZOOM_MAX),
+                        ZOOM_LERP
+                    )
+                );
+            } else {
+                this.cam.setZoom( 2 );
+            }
+
+            this.physics.overlap(
+                this.baddies,
+                bullets,
+                collideCallback
             );
-
-            var min = Math.min( this.scale.width, this.scale.height ) / 1.5;
-
-            this.cam.setZoom(
-                Phaser.Math.Linear(
-                    this.cam.zoom,
-                    Phaser.Math.Clamp(min / dist, ZOOM_MIN, ZOOM_MAX),
-                    ZOOM_LERP
-                )
-            );
-        } else {
-            this.cam.setZoom( 2 );
-        }
         }
     }
 
