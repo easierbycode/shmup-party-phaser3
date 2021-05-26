@@ -1,10 +1,13 @@
+
 import BloodSplatter from "./blood-splatter";
+
 
 export default class BaseEntity extends Phaser.Physics.Arcade.Sprite {
     
     _speed      = 1;
     baseSpeed   = 50;
-    health      = 1;
+    health;
+    maxHealth   = 1;
     
     constructor(
         scene: Phaser.Scene, 
@@ -39,6 +42,15 @@ export default class BaseEntity extends Phaser.Physics.Arcade.Sprite {
         );
         bloodSplatter.play( 'default' );
         this.group.killAndHide( this );
+    }
+
+    reset() {
+        this
+            .setActive( true )
+            .setVisible( true )
+            .health = this.maxHealth;
+
+        return this;
     }
 
 }

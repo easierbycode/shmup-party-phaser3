@@ -4,8 +4,9 @@ import BaseEntity from "./base-entity";
 
 export default class Alien extends BaseEntity {
 
-    health  = 200;
-    _speed  = 2.0;
+    _speed      = 2.0;
+    health;
+    maxHealth   = 200;
     
     constructor( scene: Phaser.Scene, x, y, key = 'alien' ) {
         super( scene, x, y, key );

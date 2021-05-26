@@ -4,8 +4,9 @@ import BaseEntity from "./base-entity";
 
 export default class LizardDen extends BaseEntity {
 
-    health              = 800;
+    health;
     maxCreaturesToSpawn = 100;
+    maxHealth           = 800;
     spawnInterval       = 6;
     
     constructor( scene: Phaser.Scene, x, y, key = 'lizard-den' ) {
@@ -37,8 +38,7 @@ export default class LizardDen extends BaseEntity {
                 if ( !this.visible || !scene.players.getLength() )  return;
                 let lizard = scene.lizards.get( this.x, this.y );
                 lizard
-                    .setActive( true )
-                    .setVisible( true )
+                    .reset()
                     .group = scene.lizards;
             },
             repeat: -1

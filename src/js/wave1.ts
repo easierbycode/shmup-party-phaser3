@@ -17,8 +17,7 @@ export default {
             );
 
             alien
-                .setActive( true )
-                .setVisible( true )
+                .reset()
                 .group = scene.aliens;
         }
 
@@ -38,8 +37,7 @@ export default {
             );
 
             lizardDen
-                .setActive( true )
-                .setVisible( true )
+                .reset()
                 .group = scene.lizardDens;
         }
 
@@ -51,8 +49,7 @@ export default {
             );
 
             pharoah
-                .setActive( true )
-                .setVisible( true )
+                .reset()
                 .group = scene.pharoahs;
         }
 
@@ -64,8 +61,7 @@ export default {
             );
 
             zombie
-                .setActive( true )
-                .setVisible( true )
+                .reset()
                 .group = scene.zombies;
         }
     }

@@ -5,7 +5,8 @@ import PharoahFireball from './pharoah-fireball';
 
 export default class Pharoah extends BaseEntity {
 
-    health  = 2000;
+    health;
+    maxHealth   = 2000;
     
     constructor( scene: Phaser.Scene, x, y, key = 'pharoah' ) {
         super( scene, x, y, key );

@@ -4,8 +4,9 @@ import BaseEntity from "./base-entity";
 
 export default class Lizard extends BaseEntity {
 
-    _speed  = 1.5;
-    health  = 200;
+    _speed      = 1.5;
+    health;
+    maxHealth   = 200;
     
     constructor( scene: Phaser.Scene, x, y, key = 'lizard' ) {
         super( scene, x, y, key );
