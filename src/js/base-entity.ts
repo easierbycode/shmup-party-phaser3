@@ -33,9 +33,9 @@ export default class BaseEntity extends Phaser.Physics.Arcade.Sprite {
     }
 
     kill() {
-        let {x, y} = this;
+        let {rotation, x, y} = this;
         let bloodSplatters: Phaser.GameObjects.Group = this.scene.bloodSplatters;
-        let bloodSplatter = bloodSplatters.get( x, y ).setVisible( true ).setActive( true );
+        let bloodSplatter = bloodSplatters.get( x, y ).setVisible( true ).setActive( true ).setRotation( rotation );
         bloodSplatter.on(
             'animationcomplete-default',
             () => bloodSplatters.killAndHide( bloodSplatter )
@@ -47,6 +47,7 @@ export default class BaseEntity extends Phaser.Physics.Arcade.Sprite {
     reset() {
         this
             .setActive( true )
+            .setDepth( 1 )
             .setVisible( true )
             .health = this.maxHealth;
 

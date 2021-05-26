@@ -20,7 +20,7 @@ class _Bullet extends Bullet {
             let {height, width}     = entity.body;
             let {rotation}          = this;
             let {impacts}           = this.getData( 'bulletManager' );
-            let impact              = impacts.get( x, y ).setVisible( true ).setActive( true ).setDepth( 1 ).setRotation( rotation );
+            let impact              = impacts.get( x, y ).setVisible( true ).setActive( true ).setRotation( rotation ).setDepth( 2 );
             if ( Math.min( height, width ) == width ) {
                   impact.displayWidth     = width;
                   impact.scaleY           = impact.scaleX;
