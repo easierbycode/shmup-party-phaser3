@@ -16,10 +16,19 @@ class _Bullet extends Bullet {
       }
 
       damage( bullet: _Bullet, entity: BaseEntity ) {
-            super.kill()
-            let {x, y}        = entity;
-            let {impacts}     = this.getData( 'bulletManager' );
-            let impact        = impacts.get( x, y ).setVisible( true ).setActive( true ).setDepth( 1 );
+            this.kill();
+            let {x, y}              = entity;
+            let {height, width}     = entity.body;
+            let {rotation}          = this;
+            let {impacts}           = this.getData( 'bulletManager' );
+            let impact              = impacts.get( x, y ).setVisible( true ).setActive( true ).setDepth( 1 ).setRotation( rotation );
+            if ( Math.min( height, width ) == width ) {
+                  impact.displayWidth     = width;
+                  impact.scaleY           = impact.scaleX;
+            } else {
+                  impact.displayHeight    = height;
+                  impact.scaleX           = impact.scaleY;
+            }
             impact.on(
                 'animationcomplete-default',
                 () => impacts.killAndHide( impact )
