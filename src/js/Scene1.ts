@@ -203,6 +203,11 @@ export default class Scene1 extends Phaser.Scene {
             { frameWidth: 32, frameHeight: 32 }
         );
         this.load.spritesheet(
+            'pac-ghost',
+            require('../assets/images/pac-ghost.png'),
+            { frameWidth: 13, frameHeight: 14 }
+        );
+        this.load.spritesheet(
             'pharoah',
             require('../assets/images/pharoah.png'),
             { frameWidth: 159, frameHeight: 73 }

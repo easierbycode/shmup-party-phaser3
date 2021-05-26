@@ -14,8 +14,48 @@ class _Bullet extends Bullet {
             this.setData( 'killType', KillType.KILL_WORLD_BOUNDS );
       }
 
-      damage( bullet: _Bullet, entity ) {}
+      damage( bullet: _Bullet, entity ) {
+            let {x, y}              = entity;
+            let {height, width}     = entity.body;
+            let {rotation}          = this;
+            let {impacts}           = this.getData( 'bulletManager' );
+            let impact              = impacts.get( x, y ).setVisible( true ).setActive( true ).setRotation( rotation ).setDepth( 2 );
+            if ( Math.min( height, width ) == width ) {
+                  impact.displayWidth     = width;
+                  impact.scaleY           = impact.scaleX;
+            } else {
+                  impact.displayHeight    = height;
+                  impact.scaleX           = impact.scaleY;
+            }
+            impact.on(
+                'animationcomplete-default',
+                () => impacts.killAndHide( impact )
+            );
+            impact.play( 'default' );
+      }
 
+}
+
+
+class BulletImpact extends Phaser.GameObjects.Sprite {
+
+      constructor(
+          scene: Phaser.Scene, 
+          x: number, 
+          y: number, 
+          key: string = 'pac-ghost'
+      ) {
+          super( scene, x, y, key );
+  
+          this.anims.create({
+              key: 'default',
+              frames: this.anims.generateFrameNames( 'pac-ghost' ),
+              frameRate: 45
+          });
+
+          this.setAlpha( 0.75 );
+      }
+  
 }
 
 
@@ -30,6 +70,8 @@ export default class PacmanBullet extends Weapon {
         group?: Phaser.GameObjects.Group
       ) {
             super( scene, bulletLimit, key, frame );
+
+            this.impacts      = scene.add.group({ classType: BulletImpact });
 
             this.addBulletAnimation(
                   'pacman-bullet.chomp',
