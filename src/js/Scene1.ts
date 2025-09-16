@@ -153,6 +153,11 @@ export default class Scene1 extends Phaser.Scene {
             'nuke',
             require('../assets/images/powerup-nuke.png')
         );
+        this.load.atlas(
+            'duke',
+            require('../assets/images/duke.png'),
+            require('../assets/images/duke.json')
+        );
         this.load.image(
             'player',
             require('../assets/images/player.png')
@@ -248,13 +253,22 @@ export default class Scene1 extends Phaser.Scene {
 
         let addPlayer = ( gamepad: Phaser.Input.Gamepad.Gamepad ) => {
             this.assignedGamepadIds.push( gamepad.id );
-            
+
+            const playerIdx = this.players.getLength();
+            const isSecondPlayer = playerIdx === 1;
+            const textureKey = isSecondPlayer ? 'duke' : 'player';
+
             let player = new Player( 
                 gamepad, 
                 this, 
                 config.width / 2, 
-                config.height / 2 
+                config.height / 2,
+                textureKey
             );
+
+            if ( isSecondPlayer ) {
+                player.setFrame( 'duke_0' );
+            }
 
             this.time.addEvent({
                 delay: 15000,
