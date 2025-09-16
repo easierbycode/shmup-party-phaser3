@@ -2,7 +2,7 @@
   "name": "shmup.party",
   "version": "0.0.1",
   "description": "",
-  "main": "index.js",
+  "main": "index.html",
   "scripts": {
     "build": "rimraf docs && parcel build src/index.html --dist-dir docs --public-url /shmup-party-phaser3/",
     "build:android": "rimraf www && parcel build src/index.html --dist-dir www --public-url /android_asset/www/ && cordova build android",
