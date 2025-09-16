@@ -251,12 +251,24 @@ export default class Scene1 extends Phaser.Scene {
             this.zombies    = this.physics.add.group({ classType: Zombie })
         ]
 
+        this.anims.create({
+            key: 'duke_animation',
+            frames: [
+                { key: 'duke', frame: 'duke_0' },
+                { key: 'duke', frame: 'duke_1' },
+                { key: 'duke', frame: 'duke_2' },
+                { key: 'duke', frame: 'duke_3' }
+            ],
+            frameRate: 6,
+            repeat: -1
+        });
+
         let addPlayer = ( gamepad: Phaser.Input.Gamepad.Gamepad ) => {
             this.assignedGamepadIds.push( gamepad.id );
 
             const playerIdx = this.players.getLength();
-            const isSecondPlayer = playerIdx === 1;
-            const textureKey = isSecondPlayer ? 'duke' : 'player';
+            const isFirstPlayer = playerIdx === 0;
+            const textureKey = isFirstPlayer ? 'duke' : 'player';
 
             let player = new Player( 
                 gamepad, 
@@ -266,8 +278,8 @@ export default class Scene1 extends Phaser.Scene {
                 textureKey
             );
 
-            if ( isSecondPlayer ) {
-                player.setFrame( 'duke_0' );
+            if ( isFirstPlayer ) {
+                player.play( 'duke_animation' );
             }
 
             this.time.addEvent({
