@@ -18,12 +18,12 @@ const files     = [
     {
         type: 'image',
         key: 'logo',
-        url: 'assets/images/shmup-party-logo.png'
+        url: '/shmup-party-phaser3/assets/images/shmup-party-logo.png'
     },
     {
         type: 'image',
         key: 'loader',
-        url: 'assets/images/loader.png'
+        url: '/shmup-party-phaser3/assets/images/loader.png'
     }
 ];
 
