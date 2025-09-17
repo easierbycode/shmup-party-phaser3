@@ -11,6 +11,40 @@ import LizardDen from './lizard-den';
 import Lizard from './lizard';
 import Pharoah from './pharoah';
 
+import alienAtlasImage from '../assets/images/alien.png';
+import alienAtlasData from '../assets/images/alien.json?url';
+import lizardAtlasImage from '../assets/images/lizard.png';
+import lizardAtlasData from '../assets/images/lizard.json?url';
+import lizardDenAtlasImage from '../assets/images/lizard-den.png';
+import lizardDenAtlasData from '../assets/images/lizard-den.json?url';
+import zombieAtlasImage from '../assets/images/zombie.png';
+import zombieAtlasData from '../assets/images/zombie.json?url';
+import backgroundImage from '../assets/images/scorched-earth.png';
+import colaImage from '../assets/images/cola.png';
+import explosion0Image from '../assets/images/explosion-0.png';
+import explosion1Image from '../assets/images/explosion-1.png';
+import explosionSkullImage from '../assets/images/explosion-skull.png';
+import explosionSkull2Image from '../assets/images/explosion-skull-2.png';
+import explosionCircleImage from '../assets/images/explosion-circle.png';
+import powerupNukeImage from '../assets/images/powerup-nuke.png';
+import dukeAtlasImage from '../assets/images/duke_atlas.png';
+import dukeAtlasData from '../assets/images/duke_atlas.json?url';
+import playerImage from '../assets/images/player.png';
+import barrierImage from '../assets/images/barrier.png';
+import bloodSplatImage from '../assets/images/blood-splat.png';
+import cigaBulletImage from '../assets/images/ciga-bullet.png';
+import cigaBulletDeathImage from '../assets/images/ciga-bullet-death.png';
+import fireballImage from '../assets/images/fireball.png';
+import ionBulletImage from '../assets/images/ion.png';
+import ionBulletImpactImage from '../assets/images/ion-impact.png';
+import laserImage from '../assets/images/laser.png';
+import pacmanSpritesheetImage from '../assets/images/pacman-spritesheet.png';
+import pacGhostImage from '../assets/images/pac-ghost.png';
+import pharoahSpritesheetImage from '../assets/images/pharoah.png';
+import smokeImage from '../assets/images/smoke.png';
+import loaderImage from '../assets/images/loader.png';
+import logoImage from '../assets/images/shmup-party-logo.png';
+
 const ZOOM_LERP = 1; 
 const ZOOM_MAX  = 2;
 const ZOOM_MIN  = 1.0;
@@ -24,7 +58,13 @@ export default class Scene1 extends Phaser.Scene {
 
     constructor() {
         super({
-            key: 'Scene1'
+            key: 'Scene1',
+            pack: {
+                files: [
+                    { type: 'image', key: 'logo', url: logoImage },
+                    { type: 'image', key: 'loader', url: loaderImage }
+                ]
+            }
         });
     }
 
@@ -40,8 +80,8 @@ export default class Scene1 extends Phaser.Scene {
 
         this.load.atlas(
             'alien',
-            require('../assets/images/alien.png'),
-            require('../assets/images/alien.json')
+            alienAtlasImage,
+            alienAtlasData
         );
         // this.load.atlas(
         //     'alien-den',
@@ -65,13 +105,13 @@ export default class Scene1 extends Phaser.Scene {
         // );
         this.load.atlas(
             'lizard',
-            require('../assets/images/lizard.png'),
-            require('../assets/images/lizard.json')
+            lizardAtlasImage,
+            lizardAtlasData
         );
         this.load.atlas(
             'lizard-den',
-            require('../assets/images/lizard-den.png'),
-            require('../assets/images/lizard-den.json')
+            lizardDenAtlasImage,
+            lizardDenAtlasData
         );
         // this.load.atlas(
         //     'player',
@@ -105,108 +145,108 @@ export default class Scene1 extends Phaser.Scene {
         // );
         this.load.atlas(
             'zombie',
-            require('../assets/images/zombie.png'),
-            require('../assets/images/zombie.json')
+            zombieAtlasImage,
+            zombieAtlasData
         );
         this.load.image(
             'bg',
-            require('../assets/images/scorched-earth.png')
+            backgroundImage
         );
         this.load.image(
             'cola',
-            require('../assets/images/cola.png')
+            colaImage
         );
         this.load.image(
             'explosion-0',
-            require('../assets/images/explosion-0.png')
+            explosion0Image
         );
         this.load.image(
             'explosion-1',
-            require('../assets/images/explosion-1.png')
+            explosion1Image
         );
         this.load.image(
             'explosion-skull',
-            require('../assets/images/explosion-skull.png')
+            explosionSkullImage
         );
         this.load.image(
             'explosion-skull-2',
-            require('../assets/images/explosion-skull-2.png')
+            explosionSkull2Image
         );
         this.load.image(
             'explosion-circle',
-            require('../assets/images/explosion-circle.png')
+            explosionCircleImage
         );
         this.load.image(
             'nuke',
-            require('../assets/images/powerup-nuke.png')
+            powerupNukeImage
         );
         this.load.atlas(
             'duke',
-            require('../assets/images/duke.png'),
-            require('../assets/images/duke.json')
+            dukeAtlasImage,
+            dukeAtlasData
         );
         this.load.image(
             'player',
-            require('../assets/images/player.png')
+            playerImage
         );
         this.load.spritesheet(
             'barrier',
-            require('../assets/images/barrier.png'),
+            barrierImage,
             { frameWidth: 80, frameHeight: 41 }
         );
         this.load.spritesheet(
             'blood-splat',
-            require('../assets/images/blood-splat.png'),
+            bloodSplatImage,
             { frameWidth: 137, frameHeight: 136 }
         );
         this.load.spritesheet(
             'ciga-bullet',
-            require('../assets/images/ciga-bullet.png'),
+            cigaBulletImage,
             { frameWidth: 9, frameHeight: 12 }
         );
         this.load.spritesheet(
             'ciga-bullet.death',
-            require('../assets/images/ciga-bullet-death.png'),
+            cigaBulletDeathImage,
             { frameWidth: 9, frameHeight: 11 }
         );
         this.load.spritesheet(
             'fireball',
-            require('../assets/images/fireball.png'),
+            fireballImage,
             { frameWidth: 41, frameHeight: 51 }
         );
         this.load.spritesheet(
             'ion-bullet',
-            require('../assets/images/ion.png'),
+            ionBulletImage,
             { frameWidth: 48, frameHeight: 30 }
         );
         this.load.spritesheet(
             'ion-bullet-impact',
-            require('../assets/images/ion-impact.png'),
+            ionBulletImpactImage,
             { frameWidth: 18, frameHeight: 22 }
         );
         this.load.spritesheet(
             'laser',
-            require('../assets/images/laser.png'),
+            laserImage,
             { frameWidth: 168, frameHeight: 72 }
         );
         this.load.spritesheet(
             'pacman-bullet',
-            require('../assets/images/pacman-spritesheet.png'),
+            pacmanSpritesheetImage,
             { frameWidth: 32, frameHeight: 32 }
         );
         this.load.spritesheet(
             'pac-ghost',
-            require('../assets/images/pac-ghost.png'),
+            pacGhostImage,
             { frameWidth: 13, frameHeight: 14 }
         );
         this.load.spritesheet(
             'pharoah',
-            require('../assets/images/pharoah.png'),
+            pharoahSpritesheetImage,
             { frameWidth: 159, frameHeight: 73 }
         );
         this.load.spritesheet(
             'smoke',
-            require('../assets/images/smoke.png'),
+            smokeImage,
             { frameWidth: 26, frameHeight: 33 }
         );
     }
@@ -238,18 +278,6 @@ export default class Scene1 extends Phaser.Scene {
             this.zombies    = this.physics.add.group({ classType: Zombie })
         ]
 
-        this.anims.create({
-            key: 'duke_animation',
-            frames: [
-                { key: 'duke', frame: 'duke_0' },
-                { key: 'duke', frame: 'duke_1' },
-                { key: 'duke', frame: 'duke_2' },
-                { key: 'duke', frame: 'duke_3' }
-            ],
-            frameRate: 6,
-            repeat: -1
-        });
-
         let addPlayer = ( gamepad: Phaser.Input.Gamepad.Gamepad ) => {
             this.assignedGamepadIds.push( gamepad.id );
 
@@ -266,7 +294,8 @@ export default class Scene1 extends Phaser.Scene {
             );
 
             if ( isFirstPlayer ) {
-                player.play( 'duke_animation' );
+                player.setFrame( 'duke_0' );
+                player.setScale( 1.4 );
             }
 
             this.time.addEvent({

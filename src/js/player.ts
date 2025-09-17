@@ -1,4 +1,5 @@
 
+import Phaser from 'phaser';
 import Barrier from "./barrier";
 import BaseEntity from "./base-entity";
 import CigaBullet from './ciga-bullet';
@@ -18,6 +19,9 @@ export default class Player extends BaseEntity {
     inputEnabled: boolean = true;
     scene!: Phaser.Scene;
     weapons: Weapon[]   = [];
+    private muzzlePoint: Phaser.Math.Vector2 = new Phaser.Math.Vector2();
+    private lastAimAngle: number | null = null;
+    private orientationOffset: number;
     
     constructor( 
         gamepad, 
@@ -35,6 +39,7 @@ export default class Player extends BaseEntity {
         this.gamepad            = gamepad;
         this.gamepadVibration   = gamepad.vibration;
         this.group              = scene.players;
+        this.orientationOffset = this.texture.key === 'player' ? -Math.PI / 2 : 0;
 
         this.gamepad.on('down', (idx: number) => {
             // L1 button
@@ -71,11 +76,15 @@ export default class Player extends BaseEntity {
     barrierDash() {
         this.previousWeapon = this.currentWeapon;
         this.currentWeapon = this.weapons.length - 1;
-        this.weapons[ this.currentWeapon ]
+        const weapon = this.weapons[ this.currentWeapon ];
+
+        weapon
             .once(BULLET_KILL, ( bullet: Bullet, weapon: Weapon ) => {
                 this.currentWeapon = this.previousWeapon;
             })
-            .fire( this.getRightCenter() );
+
+        const angle = this.lastAimAngle ?? this.rotation;
+        this.fireWeapon( weapon, angle );
     }
 
     preUpdate( time, delta ) {
@@ -101,9 +110,32 @@ export default class Player extends BaseEntity {
         var thumbstickAngle = this.coordinatesToRadians( this.gamepad.rightStick.x, this.gamepad.rightStick.y );
                 
         if ( thumbstickAngle !== null ) {
-            this.rotation   = thumbstickAngle;
-            this.weapons[ this.currentWeapon ].fire( this.getRightCenter() );
+            this.rotation = thumbstickAngle + this.orientationOffset;
+            this.lastAimAngle = thumbstickAngle;
+
+            this.fireWeapon( this.weapons[ this.currentWeapon ], thumbstickAngle );
         }
+    }
+
+    private fireWeapon( weapon: Weapon, aimAngle: number ) {
+        const muzzle = this.getFirePoint( aimAngle );
+        const fireAngle = Phaser.Math.Angle.Wrap( aimAngle - Math.PI / 2 );
+
+        const targetX = muzzle.x + Math.cos( fireAngle ) * 1000;
+        const targetY = muzzle.y + Math.sin( fireAngle ) * 1000;
+
+        weapon.fire( muzzle, targetX, targetY );
+    }
+
+    private getFirePoint( angle: number ): Phaser.Math.Vector2 {
+        const offset = Math.max(this.displayWidth, this.displayHeight) * 0.4;
+
+        this.muzzlePoint.set(
+            this.x + Math.cos(angle) * offset,
+            this.y + Math.sin(angle) * offset
+        );
+
+        return this.muzzlePoint;
     }
 
     coordinatesToRadians( x, y ) {
@@ -111,11 +143,14 @@ export default class Player extends BaseEntity {
             return null;
         }
 
-        let radians = Math.atan2( y, x );
+        let radians = Math.atan2( y, x ) + Math.PI / 2;
+        radians = Phaser.Math.Angle.Wrap( radians );
+
         if ( radians < 0 ) {
-            radians += 2 * Math.PI;
+            radians += Phaser.Math.PI2;
         }
-        return Math.abs( radians );
+
+        return radians;
     }
 
     playerVsPowerup( player: Player, powerup ) {
