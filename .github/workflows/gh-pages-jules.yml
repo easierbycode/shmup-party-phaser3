@@ -13,6 +13,8 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      GITHUB_PAGES: '1'
     steps:
       - name: Checkout your repository
         uses: actions/checkout@v3
