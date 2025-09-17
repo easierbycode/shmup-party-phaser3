@@ -14,18 +14,6 @@ import Pharoah from './pharoah';
 const ZOOM_LERP = 1; 
 const ZOOM_MAX  = 2;
 const ZOOM_MIN  = 1.0;
-const files     = [
-    {
-        type: 'image',
-        key: 'logo',
-        url: '/shmup-party-phaser3/assets/images/shmup-party-logo.png'
-    },
-    {
-        type: 'image',
-        key: 'loader',
-        url: '/shmup-party-phaser3/assets/images/loader.png'
-    }
-];
 
 
 export default class Scene1 extends Phaser.Scene {
@@ -36,8 +24,7 @@ export default class Scene1 extends Phaser.Scene {
 
     constructor() {
         super({
-            key: 'Scene1',
-            pack: { files }
+            key: 'Scene1'
         });
     }
 
