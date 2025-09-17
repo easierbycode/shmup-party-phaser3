@@ -7,7 +7,7 @@ export default defineConfig({
     chunkSizeWarningLimit: 1000,
     assetsInlineLimit: 0,
   },
-  base: '/',
+  base: process.env.GITHUB_PAGES ? '/shmup-party-phaser3/' : '/',
   resolve: {
     alias: {
       'phaser': 'phaser/dist/phaser.js'
