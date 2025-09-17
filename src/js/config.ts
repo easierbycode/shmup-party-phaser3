@@ -1,5 +1,6 @@
 
 import Scene1 from './Scene1.ts';
+import BootScene from './BootScene.ts';
 import { WeaponPlugin } from './weapon-plugin';
 
 
@@ -7,7 +8,7 @@ export var config : Phaser.Types.Core.GameConfig = {
     // 1680x1050 - player can go offscreen at bottom
     width: 1680,//1920,//1280,
     height: 1050,//1080,//768,
-    scene: Scene1,
+    scene: [BootScene, Scene1],
     render: {
         pixelArt: true,
     },
