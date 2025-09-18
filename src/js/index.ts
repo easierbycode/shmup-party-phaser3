@@ -1,3 +1,4 @@
+import '../css/index.css';
 import Phaser from 'phaser';
 import {config} from './config.ts';
 
