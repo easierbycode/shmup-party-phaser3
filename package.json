@@ -14,7 +14,7 @@
     "assets": "^3.0.1",
     "cordova": "^10.0.0",
     "cordova-android": "^8.1.0",
-    "phaser": "^3.54.0",
+    "phaser": "3.90.0",
     "phaser3_gui_inspector": "^1.2.1"
   },
   "devDependencies": {
