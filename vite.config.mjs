@@ -1,16 +1,16 @@
 import { defineConfig } from 'vite'
 
+const isCordova = process.env.BUILD_TARGET === 'cordova'
+
+// https://vitejs.dev/config/
 export default defineConfig({
-  publicDir: 'public',
   build: {
-    outDir: 'docs',
-    chunkSizeWarningLimit: 1000,
-    assetsInlineLimit: 0,
+    outDir: isCordova ? 'cordova/www' : 'dist',
+    assetsDir: 'assets',
+    sourcemap: !isCordova,
   },
-  base: process.env.GITHUB_PAGES ? '/shmup-party-phaser3/' : '/',
-  resolve: {
-    alias: {
-      'phaser': 'phaser/dist/phaser.js'
-    }
-  }
+  server: {
+    // host: '0.0.0.0', // to test on a mobile device
+  },
+  base: isCordova ? './' : '/',
 })
