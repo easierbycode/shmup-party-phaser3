@@ -75,11 +75,11 @@ jobs:
           BUILD_TARGET: cordova
         run: npm run build -- --mode production
 
-      - name: Setup Java 8
+      - name: Setup Java 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "8"
+          java-version: "17"
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
