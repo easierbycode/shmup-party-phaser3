@@ -74,11 +74,14 @@ jobs:
           sdkmanager --install "platform-tools" "platforms;android-34" "build-tools;34.0.0" || true
           yes | sdkmanager --licenses
 
+      - name: Build web assets for Cordova
+        run: npm run build:cordova-www
+
       - name: Add Android platform
         run: npx cordova platform add android
 
-      - name: Build web assets for Cordova
-        run: npm run build:android
+      - name: Build Cordova Android (release APK)
+        run: npm run build:cordova-apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
