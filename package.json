@@ -4,7 +4,7 @@
   "description": "",
   "scripts": {
     "build": "vite build",
-    "build:cordova-www": "vite build --outDir www --base /android_asset/www/",
+    "build:cordova-www": "vite build --outDir www --base ./",
     "build:cordova-apk": "npx cordova build android --debug",
     "dev": "vite",
     "test": "echo \"Error: no test specified\" && exit 1"
