@@ -1,8 +1,13 @@
-.cache
-node_modules
-www
-platforms
-plugins
-src/.DS_Store
-src/assets/.DS_Store
-.DS_Store
+# Dependencies
+node_modules/
+
+# Cordova
+platforms/
+plugins/
+www/
+
+# Build artifacts
+*.zip
+
+# Android SDK
+android_sdk/
