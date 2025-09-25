@@ -1,6 +1,6 @@
 {
   "android": {
-    "release": {
+    "debug": {
       "packageType": "apk"
     }
   }
