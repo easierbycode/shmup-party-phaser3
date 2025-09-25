@@ -88,4 +88,4 @@ jobs:
         with:
           name: evil-invaders-android-apk
           path: |
-            cordova/platforms/android/app/build/outputs/apk/**/*.apk
+            platforms/android/app/build/outputs/apk/**/*.apk
