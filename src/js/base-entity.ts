@@ -41,6 +41,11 @@ export default class BaseEntity extends Phaser.Physics.Arcade.Sprite {
             () => bloodSplatters.killAndHide( bloodSplatter )
         );
         bloodSplatter.play( 'default' );
+
+        if ( Phaser.Math.Between( 1, 100 ) < 15 ) {
+            (this.scene as any).powerups.create(this.x, this.y, 'nuke');
+        }
+
         this.group.killAndHide( this );
     }
 
