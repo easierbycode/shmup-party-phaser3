@@ -22,6 +22,10 @@ export default class Player extends BaseEntity {
     private muzzlePoint: Phaser.Math.Vector2 = new Phaser.Math.Vector2();
     private lastAimAngle: number | null = null;
     private orientationOffset: number;
+    // SNES-style pads (e.g. 1 axis) lack the right-stick axes [2]/[3] that
+    // Phaser needs to populate `rightStick`, so they can't aim with a thumbstick.
+    // For those we aim with the face buttons and auto-fire instead.
+    private useFaceButtonAiming: boolean = false;
     
     constructor( 
         gamepad, 
@@ -40,6 +44,9 @@ export default class Player extends BaseEntity {
         this.gamepadVibration   = gamepad.vibration;
         this.group              = scene.players;
         this.orientationOffset = this.texture.key === 'player' ? -Math.PI / 2 : 0;
+        // Phaser only fills `rightStick` from axes [2]/[3] when the pad reports
+        // 4+ axes; anything fewer (a SNES pad reports ~1) has no aimable stick.
+        this.useFaceButtonAiming = this.gamepad.axes.length < 4;
 
         this.gamepad.on('down', (idx: number) => {
             // L1 button
@@ -107,14 +114,42 @@ export default class Player extends BaseEntity {
             this.body.velocity.y    = this.speed;
         }
 
-        var thumbstickAngle = this.coordinatesToRadians( this.gamepad.rightStick.x, this.gamepad.rightStick.y );
-                
-        if ( thumbstickAngle !== null ) {
-            this.rotation = thumbstickAngle + this.orientationOffset;
-            this.lastAimAngle = thumbstickAngle;
+        if ( this.useFaceButtonAiming ) {
+            // SNES pad: face buttons steer the aim, and the weapon auto-fires
+            // continuously in the last aimed direction (defaults to up).
+            const faceButtonAngle = this.getFaceButtonAimAngle();
 
-            this.fireWeapon( this.weapons[ this.currentWeapon ], thumbstickAngle );
+            if ( faceButtonAngle !== null )  this.lastAimAngle = faceButtonAngle;
+
+            const aimAngle = this.lastAimAngle ?? 0;
+            this.rotation = aimAngle + this.orientationOffset;
+
+            this.fireWeapon( this.weapons[ this.currentWeapon ], aimAngle );
+        } else {
+            var thumbstickAngle = this.coordinatesToRadians( this.gamepad.rightStick.x, this.gamepad.rightStick.y );
+
+            if ( thumbstickAngle !== null ) {
+                this.rotation = thumbstickAngle + this.orientationOffset;
+                this.lastAimAngle = thumbstickAngle;
+
+                this.fireWeapon( this.weapons[ this.currentWeapon ], thumbstickAngle );
+            }
         }
+    }
+
+    // Map the four face buttons (standard-mapping indices 0-3) to an 8-way aim
+    // vector, then reuse the thumbstick angle math. Returns null when no face
+    // button is held.
+    private getFaceButtonAimAngle(): number | null {
+        const buttons = this.gamepad.buttons;
+
+        // Standard gamepad face cluster: 0 = bottom, 1 = right, 2 = left, 3 = top
+        const up    = buttons[3]?.pressed ? 1 : 0;
+        const down  = buttons[0]?.pressed ? 1 : 0;
+        const left  = buttons[2]?.pressed ? 1 : 0;
+        const right = buttons[1]?.pressed ? 1 : 0;
+
+        return this.coordinatesToRadians( right - left, down - up );
     }
 
     private fireWeapon( weapon: Weapon, aimAngle: number ) {
