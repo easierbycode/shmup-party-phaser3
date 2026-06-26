@@ -37,6 +37,9 @@ jobs:
 
   deploy:
     needs: web
+    # The github-pages environment only permits deploys from the default branch,
+    # so skip this job elsewhere (feature-branch pushes still build via `web`).
+    if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
