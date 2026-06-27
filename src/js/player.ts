@@ -37,6 +37,21 @@ export default class Player extends BaseEntity {
         left:  2,   // Y (left face button)
         right: 1,   // A (right face button)
     };
+
+    // SNES pads report the d-pad as a POV hat on this axis, normalized to
+    // [-1, 1] across 8 directions clockwise from up (N = -1, +2/7 per step);
+    // the released/neutral value (~1.2857) sits outside that range.
+    private static readonly DPAD_HAT_AXIS = 9;
+    private static readonly HAT_DIRECTIONS = [
+        { x:  0, y: -1 },   // 0  N  (up)
+        { x:  1, y: -1 },   // 1  NE
+        { x:  1, y:  0 },   // 2  E  (right)
+        { x:  1, y:  1 },   // 3  SE
+        { x:  0, y:  1 },   // 4  S  (down)
+        { x: -1, y:  1 },   // 5  SW
+        { x: -1, y:  0 },   // 6  W  (left)
+        { x: -1, y: -1 },   // 7  NW
+    ];
     
     constructor( 
         gamepad, 
@@ -62,11 +77,11 @@ export default class Player extends BaseEntity {
         this.useFaceButtonAiming = /snes/.test( padId ) || this.gamepad.axes.length < 4;
 
         this.gamepad.on('down', (idx: number) => {
-            // L1 button
-            if (idx == 4)  this.barrierDash();
+            // L1 button - change weapon
+            if (idx == 4)  this.currentWeapon = Phaser.Math.Wrap(this.currentWeapon-1, 0, this.weapons.length-1);
 
-            // R1 button
-            if (idx == 5)  this.currentWeapon = Phaser.Math.Wrap(this.currentWeapon-1, 0, this.weapons.length-1);
+            // R1 button - dash
+            if (idx == 5)  this.barrierDash();
             
             // SELECT button
             if (idx == 8)  this.scene.scene.restart();
@@ -114,18 +129,13 @@ export default class Player extends BaseEntity {
 
         if ( !this.inputEnabled )  return;
 
-        if ( this.gamepad.left || this.gamepad.leftStick.x < -0.1 ) {
-            this.body.velocity.x    = -this.speed;
-        } else if ( this.gamepad.right || this.gamepad.leftStick.x > 0.1 ) {
-            this.body.velocity.x    = this.speed;
-        }
-    
-        if ( this.gamepad.up || this.gamepad.leftStick.y < -0.1 ) {
-            this.body.velocity.y    = -this.speed;
-        }
-        else if ( this.gamepad.down || this.gamepad.leftStick.y > 0.1 ) {
-            this.body.velocity.y    = this.speed;
-        }
+        const move = this.getMoveDirection();
+
+        if ( move.x < 0 )       this.body.velocity.x = -this.speed;
+        else if ( move.x > 0 )  this.body.velocity.x = this.speed;
+
+        if ( move.y < 0 )       this.body.velocity.y = -this.speed;
+        else if ( move.y > 0 )  this.body.velocity.y = this.speed;
 
         if ( this.useFaceButtonAiming ) {
             // SNES pad: face buttons steer the aim, and the weapon auto-fires
@@ -148,6 +158,40 @@ export default class Player extends BaseEntity {
                 this.fireWeapon( this.weapons[ this.currentWeapon ], thumbstickAngle );
             }
         }
+    }
+
+    // Resolve the movement direction as { x, y } each in { -1, 0, 1 }. SNES pads
+    // report the d-pad as a POV hat (Phaser's named d-pad getters read the wrong
+    // raw buttons on this non-standard layout), so decode the hat for them; other
+    // pads use the d-pad buttons / left stick as before.
+    private getMoveDirection(): { x: number; y: number } {
+        if ( this.useFaceButtonAiming )  return this.getHatDirection();
+
+        const x = ( this.gamepad.left  || this.gamepad.leftStick.x < -0.1 ) ? -1
+                : ( this.gamepad.right || this.gamepad.leftStick.x >  0.1 ) ?  1 : 0;
+        const y = ( this.gamepad.up    || this.gamepad.leftStick.y < -0.1 ) ? -1
+                : ( this.gamepad.down  || this.gamepad.leftStick.y >  0.1 ) ?  1 : 0;
+
+        return { x, y };
+    }
+
+    // Decode the d-pad POV hat (axis Player.DPAD_HAT_AXIS) into an x/y direction.
+    // Reads the raw axis value (not getValue(), whose 0.1 threshold would zero the
+    // smallest direction values) and rounds it to one of the 8 hat octants.
+    private getHatDirection(): { x: number; y: number } {
+        const hat = this.gamepad.axes[ Player.DPAD_HAT_AXIS ];
+        if ( !hat )  return { x: 0, y: 0 };
+
+        const v = hat.value;
+
+        // Released/neutral (~1.2857) sits outside the [-1, 1] direction range;
+        // a near-zero value means the axis hasn't reported yet (the smallest real
+        // hat direction is ~0.143). Treat both as "no input".
+        if ( v < -1.05 || v > 1.05 || Math.abs( v ) < 0.05 )  return { x: 0, y: 0 };
+
+        const octant = Math.round( ( v + 1 ) * 3.5 ) & 7;   // 0 = up, clockwise
+
+        return Player.HAT_DIRECTIONS[ octant ];
     }
 
     // Map the four face buttons to an 8-way aim vector (combining buttons gives
