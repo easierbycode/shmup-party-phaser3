@@ -31,6 +31,12 @@ export default class Player extends BaseEntity {
     // indices before action dispatch so the default bindings apply. See controls.ts.
     private isSnesPad: boolean = false;
 
+    // Reverse Boost: a decaying recoil impulse (opposite the shot direction)
+    // re-applied on top of movement each frame until it fades. See reverseBoost().
+    private static readonly BOOST_SPEED = 800;
+    private static readonly BOOST_DECAY = 0.85;
+    private boostVelocity: Phaser.Math.Vector2 = new Phaser.Math.Vector2();
+
     // Raw `buttons[]` indices for the four face buttons, used for aiming.
     // The Switch-Online SNES pad reports a NON-standard layout (mapping === '',
     // ~10 axes, 16 buttons), so these are raw HID indices, NOT the W3C standard
@@ -97,8 +103,9 @@ export default class Player extends BaseEntity {
 
             for (const action of actionsForButton(button)) {
                 switch (action) {
-                    case 'dash':        this.barrierDash();   break;
-                    case 'prevWeapon':  this.cycleWeapon(-1); break;
+                    case 'dash':         this.barrierDash();   break;
+                    case 'reverseBoost': this.reverseBoost();  break;
+                    case 'prevWeapon':   this.cycleWeapon(-1); break;
                     case 'nextWeapon':  this.cycleWeapon(1);  break;
                     case 'restart':     this.scene.scene.restart(); break;
                     case 'pause':
@@ -148,6 +155,22 @@ export default class Player extends BaseEntity {
         this.fireWeapon( weapon, angle );
     }
 
+    // Reverse Boost: fire the current weapon in the aim direction and shove the
+    // player the opposite way (recoil). The impulse is stored and re-applied with
+    // decay in preUpdate so it reads as a launch that eases out, not a 1-frame blip.
+    reverseBoost() {
+        const aimAngle = this.lastAimAngle ?? 0;
+
+        // Shoot forward.
+        this.fireWeapon( this.weapons[ this.currentWeapon ], aimAngle );
+
+        // Recoil opposite the shot's world direction (bullets travel at aim - 90°).
+        const fireAngle = aimAngle - Math.PI / 2;
+        this.boostVelocity
+            .set( -Math.cos( fireAngle ), -Math.sin( fireAngle ) )
+            .scale( Player.BOOST_SPEED );
+    }
+
     preUpdate( time, delta ) {
         super.preUpdate( time, delta );
 
@@ -162,6 +185,15 @@ export default class Player extends BaseEntity {
 
         if ( move.y < 0 )       this.body.velocity.y = -this.speed;
         else if ( move.y > 0 )  this.body.velocity.y = this.speed;
+
+        // Reverse Boost recoil: a decaying impulse layered on top of movement so
+        // the player can still steer slightly while being launched back. Cut off
+        // once it drops below ~10 px/s so the launch ends crisply (no slow drift).
+        if ( this.boostVelocity.lengthSq() > 100 ) {
+            this.body.velocity.x += this.boostVelocity.x;
+            this.body.velocity.y += this.boostVelocity.y;
+            this.boostVelocity.scale( Player.BOOST_DECAY );
+        }
 
         if ( this.useFaceButtonAiming ) {
             // SNES pad: face buttons steer the aim, and the weapon auto-fires

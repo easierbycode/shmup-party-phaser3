@@ -7,7 +7,7 @@ import Phaser from 'phaser';
 // Player reads them on each gamepad button-down to dispatch the bound action.
 // An action can map to several buttons ("button(s)") — e.g. Dash on L1 + R1.
 
-export type ActionId = 'dash' | 'prevWeapon' | 'nextWeapon' | 'restart' | 'pause';
+export type ActionId = 'dash' | 'reverseBoost' | 'prevWeapon' | 'nextWeapon' | 'restart' | 'pause';
 
 export interface ActionDef {
     id: ActionId;
@@ -18,11 +18,12 @@ export interface ActionDef {
 
 // Order = display order in the Controls UI.
 export const ACTIONS: ActionDef[] = [
-    { id: 'dash',       label: 'Dash',        hint: 'Barrier dash',      defaults: [4, 5] }, // L1 + R1
-    { id: 'prevWeapon', label: 'Prev Weapon', hint: 'Cycle weapon back', defaults: [6] },    // L2
-    { id: 'nextWeapon', label: 'Next Weapon', hint: 'Cycle weapon fwd',  defaults: [7] },    // R2
-    { id: 'restart',    label: 'Restart',     hint: 'Restart the round',  defaults: [8] },    // SELECT
-    { id: 'pause',      label: 'Pause',       hint: 'Pause / resume',     defaults: [9] },    // START
+    { id: 'dash',         label: 'Dash',          hint: 'Barrier dash',        defaults: [5] }, // R1
+    { id: 'reverseBoost', label: 'Reverse Boost', hint: 'Shoot + recoil back',  defaults: [4] }, // L1
+    { id: 'prevWeapon',   label: 'Prev Weapon',   hint: 'Cycle weapon back',    defaults: [6] }, // L2
+    { id: 'nextWeapon',   label: 'Next Weapon',   hint: 'Cycle weapon fwd',     defaults: [7] }, // R2
+    { id: 'restart',      label: 'Restart',       hint: 'Restart the round',    defaults: [8] }, // SELECT
+    { id: 'pause',        label: 'Pause',         hint: 'Pause / resume',       defaults: [9] }, // START
 ];
 
 // Short glyph labels for standard-mapping button indices, kept generic so they
@@ -38,7 +39,10 @@ export function buttonLabel(idx: number): string {
     return BUTTON_LABELS[idx] ?? `B${idx}`;
 }
 
-const STORAGE_KEY = 'shmup-controls-v1';
+// v2: L1 moved from Dash to the new Reverse Boost (dash is R1 only now). Bumping
+// the key drops any v1 binding where dash still held L1, which would otherwise
+// fire both Dash and Reverse Boost on L1.
+const STORAGE_KEY = 'shmup-controls-v2';
 const MAX_PER_ACTION = 4;
 
 export type Bindings = Record<ActionId, number[]>;

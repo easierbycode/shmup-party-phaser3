@@ -91,8 +91,16 @@ export default class ControlsScene extends Phaser.Scene {
         // Dim scrim (also eats stray pointer taps behind the panel).
         this.add.rectangle(cx, cy, W, H, 0x02060b, 0.66).setInteractive();
 
+        // List metrics first, so the panel height grows with the action count
+        // (it must fit every row plus header/footer — no overlap, no scrolling).
+        const rowH = 78;
+        const rowGap = 12;
+        const HEADER_H = 210; // title + subtitle + ruler band; list starts here
+        const FOOTER_H = 90;
+        const listH = ACTIONS.length * (rowH + rowGap);
+
         const PANEL_W = 1040;
-        const PANEL_H = 800;
+        const PANEL_H = HEADER_H + listH + FOOTER_H;
         // panel-medium is 1447×963 with a ~80px glowing chrome border + chamfers.
         this.add.nineslice(cx, cy, 'ui-panel', undefined, PANEL_W, PANEL_H, 80, 80, 80, 80);
 
@@ -114,9 +122,7 @@ export default class ControlsScene extends Phaser.Scene {
             .setDisplaySize(innerR - innerL, 6).setAlpha(0.8);
 
         // ── List of action rows ─────────────────────────────────────────────────
-        const listTop = top + 210;
-        const rowH = 82;
-        const rowGap = 14;
+        const listTop = top + HEADER_H;
         const rowW = innerR - innerL;
 
         ACTIONS.forEach((def, i) => {
