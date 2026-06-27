@@ -7,6 +7,7 @@ import IonBullet from "./ion-bullet";
 import PacmanBullet from "./pacman-bullet";
 import { Bullet, Weapon } from './weapon-plugin';
 import { BULLET_KILL } from "./weapon-plugin/events";
+import { actionsForButton, ControlsState, lowerTriggerThresholds } from "./controls";
 
 
 export default class Player extends BaseEntity {
@@ -68,6 +69,8 @@ export default class Player extends BaseEntity {
 
         this.gamepad            = gamepad;
         this.gamepadVibration   = gamepad.vibration;
+        // Make the L2/R2 triggers fire 'down' on a normal pull (see controls.ts).
+        lowerTriggerThresholds( gamepad );
         this.group              = scene.players;
         this.orientationOffset = this.texture.key === 'player' ? -Math.PI / 2 : 0;
         // SNES pads expose a non-standard layout and varying axis counts (the
@@ -76,18 +79,27 @@ export default class Player extends BaseEntity {
         const padId = ( this.gamepad.id || '' ).toLowerCase();
         this.useFaceButtonAiming = /snes/.test( padId ) || this.gamepad.axes.length < 4;
 
+        // Button → action dispatch is driven by the remappable bindings in
+        // controls.ts (edited via the in-game Controls UI). Defaults: Dash on
+        // L1+R1, Prev/Next Weapon on L2/R2, Restart on SELECT, Pause on START.
         this.gamepad.on('down', (idx: number) => {
-            // L1 button - change weapon
-            if (idx == 4)  this.currentWeapon = Phaser.Math.Wrap(this.currentWeapon-1, 0, this.weapons.length-1);
+            // Ignore gameplay input while the Controls UI is up — it navigates
+            // off these same buttons.
+            if (ControlsState.open)  return;
 
-            // R1 button - dash
-            if (idx == 5)  this.barrierDash();
-            
-            // SELECT button
-            if (idx == 8)  this.scene.scene.restart();
-
-            // START button
-            if (idx == 9)  this.scene.physics.world.isPaused ? this.scene.physics.resume() : this.scene.physics.pause();
+            for (const action of actionsForButton(idx)) {
+                switch (action) {
+                    case 'dash':        this.barrierDash();   break;
+                    case 'prevWeapon':  this.cycleWeapon(-1); break;
+                    case 'nextWeapon':  this.cycleWeapon(1);  break;
+                    case 'restart':     this.scene.scene.restart(); break;
+                    case 'pause':
+                        this.scene.physics.world.isPaused
+                            ? this.scene.physics.resume()
+                            : this.scene.physics.pause();
+                        break;
+                }
+            }
         });
 
         this.weapons.push( new IonBullet( this, scene ) );
@@ -106,6 +118,12 @@ export default class Player extends BaseEntity {
 
     set previousWeapon( weaponIdx: number ) {
         if ( weaponIdx != this.weapons.length - 1 )  this._previousWeapon = weaponIdx;
+    }
+
+    // Cycle the active weapon forward (+1) or back (-1). The last slot is the
+    // barrier (the dash weapon), so wrap across the real weapons only.
+    cycleWeapon( dir: number ) {
+        this.currentWeapon = Phaser.Math.Wrap( this.currentWeapon + dir, 0, this.weapons.length - 1 );
     }
 
     barrierDash() {
