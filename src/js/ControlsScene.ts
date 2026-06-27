@@ -9,6 +9,8 @@ import {
     resetAll,
     ControlsState,
     lowerTriggerThresholds,
+    snesHatDirection,
+    ensureControlsFont,
 } from './controls.ts';
 
 import panelImg from '../assets/images/gfx/panel-medium.png';
@@ -21,6 +23,10 @@ import rulerImg from '../assets/images/gfx/horizontal-ruler.png';
 
 // Standard-mapping button indices used for menu navigation.
 const BTN = { A: 0, B: 1, X: 2, Y: 3, DPAD_UP: 12, DPAD_DOWN: 13, START: 9 };
+
+// UI font — Orbitron (loaded in index.html), with a monospace fallback for the
+// brief window before the web font finishes loading (see the fonts.ready hook).
+const FONT = 'Orbitron, monospace';
 
 interface Row {
     def: ActionDef;
@@ -95,8 +101,10 @@ export default class ControlsScene extends Phaser.Scene {
         // (it must fit every row plus header/footer — no overlap, no scrolling).
         const rowH = 78;
         const rowGap = 12;
-        const HEADER_H = 210; // title + subtitle + ruler band; list starts here
-        const FOOTER_H = 90;
+        // Header/footer bands are sized to keep the legend rows clear of the
+        // panel's ~80px chrome border (they used to sit on it).
+        const HEADER_H = 224; // title + subtitle + ruler band; list starts here
+        const FOOTER_H = 140;
         const listH = ACTIONS.length * (rowH + rowGap);
 
         const PANEL_W = 1040;
@@ -109,16 +117,17 @@ export default class ControlsScene extends Phaser.Scene {
         const top = cy - PANEL_H / 2;
 
         // ── Header ─────────────────────────────────────────────────────────────
-        this.add.text(cx, top + 86, 'CONTROLS', {
-            fontFamily: 'monospace', fontSize: '52px', fontStyle: 'bold',
+        const headRow = top + 108; // clear of the top chrome; RESET ALL / ✕ share it
+        this.add.text(cx, headRow, 'CONTROLS', {
+            fontFamily: FONT, fontSize: '50px', fontStyle: '900',
             color: '#e6fbff', stroke: '#0a4f78', strokeThickness: 6,
         }).setOrigin(0.5).setShadow(0, 0, '#39c8ff', 16, true, true);
 
-        this.add.text(cx, top + 134, 'MAP ACTIONS TO YOUR CONTROLLER', {
-            fontFamily: 'monospace', fontSize: '20px', color: '#7fb8d6', letterSpacing: 4,
+        this.add.text(cx, top + 158, 'MAP ACTIONS TO YOUR CONTROLLER', {
+            fontFamily: FONT, fontSize: '20px', color: '#7fb8d6', letterSpacing: 4,
         } as any).setOrigin(0.5);
 
-        this.add.image(cx, top + 168, 'ui-ruler')
+        this.add.image(cx, top + 192, 'ui-ruler')
             .setDisplaySize(innerR - innerL, 6).setAlpha(0.8);
 
         // ── List of action rows ─────────────────────────────────────────────────
@@ -141,13 +150,13 @@ export default class ControlsScene extends Phaser.Scene {
                 .setVisible(false);
 
             const label = this.add.text(innerL + 26, y, def.label, {
-                fontFamily: 'monospace', fontSize: '30px', fontStyle: 'bold', color: '#bfe9ff',
+                fontFamily: FONT, fontSize: '30px', fontStyle: 'bold', color: '#bfe9ff',
             }).setOrigin(0, 0.5);
 
             const badges = this.add.container(0, y);
 
             const prompt = this.add.text(innerR - 26, y, 'PRESS A BUTTON…', {
-                fontFamily: 'monospace', fontSize: '24px', fontStyle: 'bold', color: '#ffd23c',
+                fontFamily: FONT, fontSize: '24px', fontStyle: 'bold', color: '#ffd23c',
             }).setOrigin(1, 0.5).setVisible(false);
 
             // Pointer affordance: hover/tap to select, tap selected row to rebind.
@@ -163,22 +172,23 @@ export default class ControlsScene extends Phaser.Scene {
         });
 
         // ── Footer prompts ───────────────────────────────────────────────────────
-        this.footer = this.add.text(cx, top + PANEL_H - 56, '', {
-            fontFamily: 'monospace', fontSize: '22px', color: '#8fd0ec',
+        // Sit it clear of the bottom chrome rather than on it.
+        this.footer = this.add.text(cx, top + PANEL_H - 100, '', {
+            fontFamily: FONT, fontSize: '22px', color: '#8fd0ec',
         }).setOrigin(0.5);
 
-        // Header affordances: RESET ALL (left) and a pointer/touch close (right) —
-        // so touch users (who reach this via the launcher's two-finger gesture and
-        // have no gamepad B / keyboard ESC) can still dismiss the panel.
-        const resetBtn = this.add.text(innerL + 4, top + 52, 'RESET ALL', {
-            fontFamily: 'monospace', fontSize: '20px', fontStyle: 'bold', color: '#9fe0ff',
+        // Header affordances on the title row: RESET ALL (left) and a pointer/touch
+        // close (right) — so touch users (who reach this via the launcher's
+        // two-finger gesture and have no gamepad B / keyboard ESC) can still dismiss.
+        const resetBtn = this.add.text(innerL + 18, headRow, 'RESET ALL', {
+            fontFamily: FONT, fontSize: '20px', fontStyle: 'bold', color: '#9fe0ff',
         }).setOrigin(0, 0.5).setInteractive({ useHandCursor: true });
         resetBtn.on('pointerover', () => resetBtn.setColor('#ffffff'));
         resetBtn.on('pointerout', () => resetBtn.setColor('#9fe0ff'));
         resetBtn.on('pointerdown', () => { if (!this.capturing) { resetAll(); this.refresh(); } });
 
-        const closeBtn = this.add.text(innerR + 4, top + 52, '✕', {
-            fontFamily: 'monospace', fontSize: '30px', fontStyle: 'bold', color: '#9fe0ff',
+        const closeBtn = this.add.text(innerR - 18, headRow, '✕', {
+            fontFamily: FONT, fontSize: '30px', fontStyle: 'bold', color: '#9fe0ff',
         }).setOrigin(1, 0.5).setInteractive({ useHandCursor: true });
         closeBtn.on('pointerover', () => closeBtn.setColor('#ffffff'));
         closeBtn.on('pointerout', () => closeBtn.setColor('#9fe0ff'));
@@ -192,6 +202,18 @@ export default class ControlsScene extends Phaser.Scene {
         this.input.keyboard?.on('keydown-ESC', () => { this.capturing ? this.cancelCapture() : this.close(); });
 
         this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => { ControlsState.open = false; });
+
+        // Canvas text bakes the font at draw time, so if Orbitron is still loading
+        // the first paint uses the monospace fallback. Force the fetch, then
+        // re-render every text object once it's ready (FOUT → swap).
+        ensureControlsFont().then(() => {
+            if (this.closing || !this.scene.isActive()) return;
+            const rerender = (objs: Phaser.GameObjects.GameObject[]) => objs.forEach((o: any) => {
+                if (o.type === 'Text' && o.updateText) o.updateText();
+                else if (o.type === 'Container' && o.list) rerender(o.list);
+            });
+            rerender(this.children.list);
+        });
 
         this.refresh();
     }
@@ -215,8 +237,11 @@ export default class ControlsScene extends Phaser.Scene {
             for (let b = 0; b <= 16; b++) cur[b] = !!pad.buttons[b]?.pressed;
 
             const sy = pad.leftStick ? pad.leftStick.y : 0;
-            const navUp = cur[BTN.DPAD_UP] || sy < -0.5;
-            const navDown = cur[BTN.DPAD_DOWN] || sy > 0.5;
+            // SNES pads put the d-pad on a hat axis, not buttons 12/13 or the
+            // stick, so fold that in or the menu won't respond to it.
+            const hat = snesHatDirection(pad);
+            const navUp = cur[BTN.DPAD_UP] || sy < -0.5 || hat.up;
+            const navDown = cur[BTN.DPAD_DOWN] || sy > 0.5 || hat.down;
 
             // First sight of a pad (menu just opened): seed its edge-latch from the
             // live physical state and act on nothing this frame. A button still
@@ -343,13 +368,13 @@ export default class ControlsScene extends Phaser.Scene {
             const bx = x - size / 2;
             if (idx < 0) {
                 const t = this.add.text(0, 0, '—', {
-                    fontFamily: 'monospace', fontSize: '30px', color: '#5e7f93',
+                    fontFamily: FONT, fontSize: '30px', color: '#5e7f93',
                 }).setOrigin(1, 0.5).setPosition(x, 0);
                 row.badges.add(t);
             } else {
                 const ring = this.add.image(bx, 0, 'ui-pad-circle').setDisplaySize(size, size);
                 const txt = this.add.text(bx, 0, buttonLabel(idx), {
-                    fontFamily: 'monospace', fontSize: '20px', fontStyle: 'bold', color: '#eaffff',
+                    fontFamily: FONT, fontSize: '20px', fontStyle: 'bold', color: '#eaffff',
                 }).setOrigin(0.5);
                 row.badges.add(ring);
                 row.badges.add(txt);

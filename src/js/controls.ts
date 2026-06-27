@@ -144,3 +144,49 @@ export function lowerTriggerThresholds(pad: Phaser.Input.Gamepad.Gamepad) {
         if (btn) btn.threshold = 0.5;
     }
 }
+
+// Canvas text never triggers a web-font download on its own (only DOM text
+// does), so a Phaser Text styled with Orbitron silently falls back to monospace
+// unless we explicitly fetch the weights first. Load the ones the Controls UI
+// uses; resolves once they're ready (or immediately when unsupported). Cached by
+// the browser, so it's cheap to call again — warm it at boot, await it in the UI.
+export function ensureControlsFont(): Promise<void> {
+    try {
+        const fonts: any = (typeof document !== 'undefined') ? (document as any).fonts : null;
+        if (!fonts || !fonts.load) return Promise.resolve();
+        return Promise.all([
+            fonts.load('500 20px Orbitron'),
+            fonts.load('700 30px Orbitron'),
+            fonts.load('900 50px Orbitron'),
+        ]).then(() => undefined).catch(() => undefined);
+    } catch (_) {
+        return Promise.resolve();
+    }
+}
+
+// SNES pads report the D-pad as an encoded POV hat on axis 9 (not buttons 12-15
+// or the left stick), so menus that only read those miss it. Decode the hat into
+// directional booleans for SNES pads; everything else returns all-false. Mirrors
+// the gameplay hat decode in player.ts (8 octants from N clockwise; neutral
+// ~1.2857 sits outside [-1,1]). Reads the raw `.value` so small octants aren't
+// zeroed by Phaser's axis threshold.
+export function snesHatDirection(
+    pad: Phaser.Input.Gamepad.Gamepad,
+): { up: boolean; down: boolean; left: boolean; right: boolean } {
+    const none = { up: false, down: false, left: false, right: false };
+    if (!/snes/.test((pad?.id || '').toLowerCase())) return none;
+    const axis = pad.axes && pad.axes.length > 9 ? pad.axes[9] : null;
+    const v = axis ? axis.value : NaN;
+    if (typeof v !== 'number' || v > 1.05 || v < -1.05) return none;
+    switch (((Math.round((v + 1) * 3.5) % 8) + 8) % 8) {
+        case 0: return { up: true,  down: false, left: false, right: false };
+        case 1: return { up: true,  down: false, left: false, right: true  };
+        case 2: return { up: false, down: false, left: false, right: true  };
+        case 3: return { up: false, down: true,  left: false, right: true  };
+        case 4: return { up: false, down: true,  left: false, right: false };
+        case 5: return { up: false, down: true,  left: true,  right: false };
+        case 6: return { up: false, down: false, left: true,  right: false };
+        case 7: return { up: true,  down: false, left: true,  right: false };
+        default: return none;
+    }
+}

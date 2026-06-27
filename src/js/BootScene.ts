@@ -1,8 +1,13 @@
 import Phaser from 'phaser';
+import { ensureControlsFont } from './controls';
 
 export default class BootScene extends Phaser.Scene {
     constructor() {
         super({ key: 'BootScene' });
+        // Start fetching the Controls-UI web font (Orbitron) at boot so it's
+        // ready by the time the player opens the panel (canvas text won't fetch
+        // it on its own — see ensureControlsFont).
+        ensureControlsFont();
     }
 
     preload() {
