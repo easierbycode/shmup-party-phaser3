@@ -22,10 +22,21 @@ export default class Player extends BaseEntity {
     private muzzlePoint: Phaser.Math.Vector2 = new Phaser.Math.Vector2();
     private lastAimAngle: number | null = null;
     private orientationOffset: number;
-    // SNES-style pads (e.g. 1 axis) lack the right-stick axes [2]/[3] that
-    // Phaser needs to populate `rightStick`, so they can't aim with a thumbstick.
-    // For those we aim with the face buttons and auto-fire instead.
+    // SNES-style pads have no analog right stick, so Phaser's `rightStick`
+    // (axes [2]/[3]) stays at 0,0 and can't aim. For those we aim with the face
+    // buttons and auto-fire instead.
     private useFaceButtonAiming: boolean = false;
+
+    // Raw `buttons[]` indices for the four face buttons, used for aiming.
+    // The Switch-Online SNES pad reports a NON-standard layout (mapping === '',
+    // ~10 axes, 16 buttons), so these are raw HID indices, NOT the W3C standard
+    // 0=bottom/1=right/2=left/3=top convention. Verify per-pad on hardware.
+    private static readonly FACE_AIM = {
+        up:    3,   // X (top face button)
+        down:  0,   // B (bottom face button)
+        left:  2,   // Y (left face button)
+        right: 1,   // A (right face button)
+    };
     
     constructor( 
         gamepad, 
@@ -44,9 +55,11 @@ export default class Player extends BaseEntity {
         this.gamepadVibration   = gamepad.vibration;
         this.group              = scene.players;
         this.orientationOffset = this.texture.key === 'player' ? -Math.PI / 2 : 0;
-        // Phaser only fills `rightStick` from axes [2]/[3] when the pad reports
-        // 4+ axes; anything fewer (a SNES pad reports ~1) has no aimable stick.
-        this.useFaceButtonAiming = this.gamepad.axes.length < 4;
+        // SNES pads expose a non-standard layout and varying axis counts (the
+        // Switch-Online SNES pad reports id "SNES Controller ..." with ~10 axes),
+        // so detect them by id, with a fallback for true low-axis-count pads.
+        const padId = ( this.gamepad.id || '' ).toLowerCase();
+        this.useFaceButtonAiming = /snes/.test( padId ) || this.gamepad.axes.length < 4;
 
         this.gamepad.on('down', (idx: number) => {
             // L1 button
@@ -137,17 +150,17 @@ export default class Player extends BaseEntity {
         }
     }
 
-    // Map the four face buttons (standard-mapping indices 0-3) to an 8-way aim
-    // vector, then reuse the thumbstick angle math. Returns null when no face
-    // button is held.
+    // Map the four face buttons to an 8-way aim vector (combining buttons gives
+    // diagonals), then reuse the thumbstick angle math. Returns null when no
+    // face button is held. Indices come from Player.FACE_AIM.
     private getFaceButtonAimAngle(): number | null {
         const buttons = this.gamepad.buttons;
+        const aim     = Player.FACE_AIM;
 
-        // Standard gamepad face cluster: 0 = bottom, 1 = right, 2 = left, 3 = top
-        const up    = buttons[3]?.pressed ? 1 : 0;
-        const down  = buttons[0]?.pressed ? 1 : 0;
-        const left  = buttons[2]?.pressed ? 1 : 0;
-        const right = buttons[1]?.pressed ? 1 : 0;
+        const up    = buttons[ aim.up    ]?.pressed ? 1 : 0;
+        const down  = buttons[ aim.down  ]?.pressed ? 1 : 0;
+        const left  = buttons[ aim.left  ]?.pressed ? 1 : 0;
+        const right = buttons[ aim.right ]?.pressed ? 1 : 0;
 
         return this.coordinatesToRadians( right - left, down - up );
     }
