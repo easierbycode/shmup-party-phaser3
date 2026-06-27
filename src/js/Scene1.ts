@@ -10,6 +10,7 @@ import BloodSplatter from './blood-splatter';
 import LizardDen from './lizard-den';
 import Lizard from './lizard';
 import Pharoah from './pharoah';
+import { initLauncherBridge } from './launcher-osd';
 
 import alienAtlasImage from '../assets/images/alien.png';
 import alienAtlasData from '../assets/images/alien.json?url';
@@ -309,7 +310,7 @@ export default class Scene1 extends Phaser.Scene {
             this.players.add( player );
         };
 
-        if ( this.input.gamepad.total )  this.input.gamepad.gamepads.forEach( addPlayer );
+        if ( this.input.gamepad.total )  this.input.gamepad.gamepads.filter( pad => pad && pad.connected ).forEach( addPlayer );
 
         this.input.gamepad.on('down', ( pad: Phaser.Input.Gamepad.Gamepad ) => {
             this.assignedGamepadIds.includes( pad.id ) ? void( 0 ) : addPlayer( pad );
@@ -328,6 +329,16 @@ export default class Scene1 extends Phaser.Scene {
         this.input.on('pointerdown', (pointer, currentlyOver) => {
             let {worldX: x, worldY: y} = pointer;
             this.powerups.create(x, y, 'nuke');
+        });
+
+        // Advertise the "Controls" entry to the cmg launcher OSD and listen for
+        // its activation (idempotent across scene restarts).
+        initLauncherBridge( this.game );
+
+        // Standalone (run outside the launcher, e.g. the GitHub Pages build) has
+        // no OSD to open Controls from, so give it a keyboard escape hatch.
+        this.input.keyboard?.on('keydown-C', () => {
+            if ( !this.game.scene.isActive('ControlsScene') )  this.game.scene.run('ControlsScene');
         });
     }
 
