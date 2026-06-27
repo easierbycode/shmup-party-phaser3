@@ -114,6 +114,21 @@ export function actionsForButton(idx: number): ActionId[] {
 // (the menu drives its own navigation off the very same buttons).
 export const ControlsState = { open: false };
 
+// Some pads report non-standard button indices. The Switch-Online SNES pad
+// (id "SNES Controller …", 057e:2017) sends ZR as button 15 — which the W3C
+// standard layout calls "d-pad right" — instead of the standard R2 = 7, so its
+// trigger never matches the default Next-Weapon binding. For SNES pads we alias
+// the repurposed index back to the standard one the bindings use, so the trigger
+// works without remapping (and still follows R2 if the user rebinds it). Gated
+// to SNES pads in Player so a standard pad's real d-pad-right is unaffected.
+const SNES_BUTTON_ALIAS: Record<number, number> = {
+    15: 7, // ZR → R2 (Next Weapon)
+};
+
+export function aliasSnesButton(idx: number): number {
+    return SNES_BUTTON_ALIAS[idx] ?? idx;
+}
+
 // Analog triggers (L2/R2 = standard indices 6/7) default to a Phaser press
 // threshold of 1.0, so a 'down' event only fires on a *full* pull — and some
 // pads top out just under 1.0 and never fire. Lower those two buttons to 0.5 so

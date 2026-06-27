@@ -7,7 +7,7 @@ import IonBullet from "./ion-bullet";
 import PacmanBullet from "./pacman-bullet";
 import { Bullet, Weapon } from './weapon-plugin';
 import { BULLET_KILL } from "./weapon-plugin/events";
-import { actionsForButton, ControlsState, lowerTriggerThresholds } from "./controls";
+import { actionsForButton, aliasSnesButton, ControlsState, lowerTriggerThresholds } from "./controls";
 
 
 export default class Player extends BaseEntity {
@@ -27,6 +27,9 @@ export default class Player extends BaseEntity {
     // (axes [2]/[3]) stays at 0,0 and can't aim. For those we aim with the face
     // buttons and auto-fire instead.
     private useFaceButtonAiming: boolean = false;
+    // SNES pads remap some buttons (ZR → b15); alias them back to standard
+    // indices before action dispatch so the default bindings apply. See controls.ts.
+    private isSnesPad: boolean = false;
 
     // Raw `buttons[]` indices for the four face buttons, used for aiming.
     // The Switch-Online SNES pad reports a NON-standard layout (mapping === '',
@@ -77,7 +80,8 @@ export default class Player extends BaseEntity {
         // Switch-Online SNES pad reports id "SNES Controller ..." with ~10 axes),
         // so detect them by id, with a fallback for true low-axis-count pads.
         const padId = ( this.gamepad.id || '' ).toLowerCase();
-        this.useFaceButtonAiming = /snes/.test( padId ) || this.gamepad.axes.length < 4;
+        this.isSnesPad = /snes/.test( padId );
+        this.useFaceButtonAiming = this.isSnesPad || this.gamepad.axes.length < 4;
 
         // Button → action dispatch is driven by the remappable bindings in
         // controls.ts (edited via the in-game Controls UI). Defaults: Dash on
@@ -87,7 +91,11 @@ export default class Player extends BaseEntity {
             // off these same buttons.
             if (ControlsState.open)  return;
 
-            for (const action of actionsForButton(idx)) {
+            // SNES pads report some buttons at non-standard indices (ZR → b15);
+            // map them back so the default bindings (R2 = 7, etc.) apply.
+            const button = this.isSnesPad ? aliasSnesButton(idx) : idx;
+
+            for (const action of actionsForButton(button)) {
                 switch (action) {
                     case 'dash':        this.barrierDash();   break;
                     case 'prevWeapon':  this.cycleWeapon(-1); break;
