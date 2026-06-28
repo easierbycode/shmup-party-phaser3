@@ -43,7 +43,8 @@ import pacmanSpritesheetImage from '../assets/images/pacman-spritesheet.png';
 import pacGhostImage from '../assets/images/pac-ghost.png';
 import pharoahSpritesheetImage from '../assets/images/pharoah.png';
 import smokeImage from '../assets/images/smoke.png';
-import loaderImage from '../assets/images/loader.png';
+import loaderEmptyImage from '../assets/images/loader-empty.png';
+import loaderFillImage from '../assets/images/loader-fill.png';
 import logoImage from '../assets/images/shmup-party-logo.png';
 
 const ZOOM_LERP = 1; 
@@ -56,6 +57,9 @@ export default class Scene1 extends Phaser.Scene {
     assignedGamepadIds: string[] = [];
     mid: Phaser.Math.Vector2 = new Phaser.Math.Vector2();
     powerups!: Phaser.GameObjects.Group;
+    private loadingBarFill!: Phaser.GameObjects.Image;
+    private loadingBarFillWidth = 0;
+    private loadingBarFillHeight = 0;
 
     constructor() {
         super({
@@ -63,7 +67,8 @@ export default class Scene1 extends Phaser.Scene {
             pack: {
                 files: [
                     { type: 'image', key: 'logo', url: logoImage },
-                    { type: 'image', key: 'loader', url: loaderImage }
+                    { type: 'image', key: 'loader-empty', url: loaderEmptyImage },
+                    { type: 'image', key: 'loader-fill', url: loaderFillImage }
                 ]
             }
         });
@@ -71,12 +76,21 @@ export default class Scene1 extends Phaser.Scene {
 
     init(data) {
         this.add.sprite(config.width / 2, config.height / 2, 'logo');
-        this.loadingBar = this.add.sprite(config.width / 2, config.height / 2 + 128, 'loader');
+
+        const loadingBarY = config.height / 2 + 128;
+        const loadingBarEmpty = this.add.image(0, loadingBarY, 'loader-empty').setOrigin(0, 0.5);
+        const loadingBarX = Math.round(config.width / 2 - loadingBarEmpty.width / 2);
+
+        loadingBarEmpty.setX(loadingBarX);
+        this.loadingBarFill = this.add.image(loadingBarX, loadingBarY, 'loader-fill').setOrigin(0, 0.5);
+        this.loadingBarFillWidth = this.loadingBarFill.width;
+        this.loadingBarFillHeight = this.loadingBarFill.height;
+        this.setLoadingBarProgress(0);
     }
 
     preload() {
         this.load.on('progress', (value) => {
-            this.loadingBar.setScale(value, 1);
+            this.setLoadingBarProgress(value);
         });
 
         this.load.atlas(
@@ -250,6 +264,12 @@ export default class Scene1 extends Phaser.Scene {
             smokeImage,
             { frameWidth: 26, frameHeight: 33 }
         );
+    }
+
+    private setLoadingBarProgress(value: number) {
+        const cropWidth = Math.ceil(this.loadingBarFillWidth * Phaser.Math.Clamp(value, 0, 1));
+
+        this.loadingBarFill.setCrop(0, 0, cropWidth, this.loadingBarFillHeight);
     }
 
     create() {
