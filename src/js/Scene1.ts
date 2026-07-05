@@ -11,6 +11,7 @@ import LizardDen from './lizard-den';
 import Lizard from './lizard';
 import Pharoah from './pharoah';
 import { initLauncherBridge } from './launcher-osd';
+import { initTwinStick } from './twin-stick';
 
 import alienAtlasImage from '../assets/images/alien.png';
 import alienAtlasData from '../assets/images/alien.json?url';
@@ -334,6 +335,12 @@ export default class Scene1 extends Phaser.Scene {
         // Advertise the "Controls" entry to the cmg launcher OSD and listen for
         // its activation (idempotent across scene restarts).
         initLauncherBridge( this.game );
+
+        // Advertise Twin-Stick mode (default ON) and follow the launcher's OSD
+        // toggle. Streamed/standalone builds synthesize it in Player via
+        // readDpad()/faceAim(); inside the launcher cache the pad arrives
+        // pre-synthesized. Idempotent across scene restarts.
+        initTwinStick( true );
 
         // Standalone (run outside the launcher, e.g. the GitHub Pages build) has
         // no OSD to open Controls from, so give it a keyboard escape hatch.

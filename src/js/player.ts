@@ -8,6 +8,7 @@ import PacmanBullet from "./pacman-bullet";
 import { Bullet, Weapon } from './weapon-plugin';
 import { BULLET_KILL } from "./weapon-plugin/events";
 import { actionsForButton, aliasSnesButton, ControlsState, lowerTriggerThresholds } from "./controls";
+import { faceAim, isSnesPadId, readDpad, rightStickIsTrustworthy, TwinStick } from "./twin-stick";
 
 
 export default class Player extends BaseEntity {
@@ -23,40 +24,10 @@ export default class Player extends BaseEntity {
     private muzzlePoint: Phaser.Math.Vector2 = new Phaser.Math.Vector2();
     private lastAimAngle: number | null = null;
     private orientationOffset: number;
-    // SNES-style pads have no analog right stick, so Phaser's `rightStick`
-    // (axes [2]/[3]) stays at 0,0 and can't aim. For those we aim with the face
-    // buttons and auto-fire instead.
-    private useFaceButtonAiming: boolean = false;
     // SNES pads remap some buttons (ZR → b15); alias them back to standard
     // indices before action dispatch so the default bindings apply. See controls.ts.
     private isSnesPad: boolean = false;
 
-    // Raw `buttons[]` indices for the four face buttons, used for aiming.
-    // The Switch-Online SNES pad reports a NON-standard layout (mapping === '',
-    // ~10 axes, 16 buttons), so these are raw HID indices, NOT the W3C standard
-    // 0=bottom/1=right/2=left/3=top convention. Verify per-pad on hardware.
-    private static readonly FACE_AIM = {
-        up:    3,   // X (top face button)
-        down:  0,   // B (bottom face button)
-        left:  2,   // Y (left face button)
-        right: 1,   // A (right face button)
-    };
-
-    // SNES pads report the d-pad as a POV hat on this axis, normalized to
-    // [-1, 1] across 8 directions clockwise from up (N = -1, +2/7 per step);
-    // the released/neutral value (~1.2857) sits outside that range.
-    private static readonly DPAD_HAT_AXIS = 9;
-    private static readonly HAT_DIRECTIONS = [
-        { x:  0, y: -1 },   // 0  N  (up)
-        { x:  1, y: -1 },   // 1  NE
-        { x:  1, y:  0 },   // 2  E  (right)
-        { x:  1, y:  1 },   // 3  SE
-        { x:  0, y:  1 },   // 4  S  (down)
-        { x: -1, y:  1 },   // 5  SW
-        { x: -1, y:  0 },   // 6  W  (left)
-        { x: -1, y: -1 },   // 7  NW
-    ];
-    
     constructor( 
         gamepad, 
         scene: Phaser.Scene, 
@@ -76,12 +47,11 @@ export default class Player extends BaseEntity {
         lowerTriggerThresholds( gamepad );
         this.group              = scene.players;
         this.orientationOffset = this.texture.key === 'player' ? -Math.PI / 2 : 0;
-        // SNES pads expose a non-standard layout and varying axis counts (the
-        // Switch-Online SNES pad reports id "SNES Controller ..." with ~10 axes),
-        // so detect them by id, with a fallback for true low-axis-count pads.
-        const padId = ( this.gamepad.id || '' ).toLowerCase();
-        this.isSnesPad = /snes/.test( padId );
-        this.useFaceButtonAiming = this.isSnesPad || this.gamepad.axes.length < 4;
+        // SNES pads expose non-standard layouts (see twin-stick.ts); detect by
+        // id for the action-button aliasing. Movement/aim reads no longer need
+        // a per-pad mode: readDpad()/faceAim() handle every layout, and the
+        // right stick — real or launcher-synthesized — always takes precedence.
+        this.isSnesPad = isSnesPadId( this.gamepad.id );
 
         // Button → action dispatch is driven by the remappable bindings in
         // controls.ts (edited via the in-game Controls UI). Defaults: Dash on
@@ -93,7 +63,7 @@ export default class Player extends BaseEntity {
 
             // SNES pads report some buttons at non-standard indices (ZR → b15);
             // map them back so the default bindings (R2 = 7, etc.) apply.
-            const button = this.isSnesPad ? aliasSnesButton(idx) : idx;
+            const button = this.isSnesPad ? aliasSnesButton(idx, this.gamepad) : idx;
 
             for (const action of actionsForButton(button)) {
                 switch (action) {
@@ -163,10 +133,26 @@ export default class Player extends BaseEntity {
         if ( move.y < 0 )       this.body.velocity.y = -this.speed;
         else if ( move.y > 0 )  this.body.velocity.y = this.speed;
 
-        if ( this.useFaceButtonAiming ) {
-            // SNES pad: face buttons steer the aim, and the weapon auto-fires
-            // continuously in the last aimed direction (defaults to up).
-            const faceButtonAngle = this.getFaceButtonAimAngle();
+        // Aim + fire. A right stick — real, or synthesized by the cmg launcher's
+        // Twin-Stick patch (D-pad → left stick, faces → right stick) — takes
+        // precedence, but only where axes[2]/[3] are actually a stick: on raw
+        // non-standard SNES layouts they can carry the digital D-pad pair (see
+        // rightStickIsTrustworthy). Without stick signal, Twin-Stick mode aims
+        // with the face buttons and auto-fires continuously in the last aimed
+        // direction (defaults to up); SNES pads keep that behavior even with
+        // the mode off, since they have no other way to aim.
+        const thumbstickAngle = rightStickIsTrustworthy( this.gamepad )
+            ? this.coordinatesToRadians( this.gamepad.rightStick.x, this.gamepad.rightStick.y )
+            : null;
+
+        if ( thumbstickAngle !== null ) {
+            this.rotation = thumbstickAngle + this.orientationOffset;
+            this.lastAimAngle = thumbstickAngle;
+
+            this.fireWeapon( this.weapons[ this.currentWeapon ], thumbstickAngle );
+        } else if ( TwinStick.enabled || this.isSnesPad ) {
+            const aim = faceAim( this.gamepad );
+            const faceButtonAngle = this.coordinatesToRadians( aim.x, aim.y );
 
             if ( faceButtonAngle !== null )  this.lastAimAngle = faceButtonAngle;
 
@@ -174,65 +160,23 @@ export default class Player extends BaseEntity {
             this.rotation = aimAngle + this.orientationOffset;
 
             this.fireWeapon( this.weapons[ this.currentWeapon ], aimAngle );
-        } else {
-            var thumbstickAngle = this.coordinatesToRadians( this.gamepad.rightStick.x, this.gamepad.rightStick.y );
-
-            if ( thumbstickAngle !== null ) {
-                this.rotation = thumbstickAngle + this.orientationOffset;
-                this.lastAimAngle = thumbstickAngle;
-
-                this.fireWeapon( this.weapons[ this.currentWeapon ], thumbstickAngle );
-            }
         }
     }
 
-    // Resolve the movement direction as { x, y } each in { -1, 0, 1 }. SNES pads
-    // report the d-pad as a POV hat (Phaser's named d-pad getters read the wrong
-    // raw buttons on this non-standard layout), so decode the hat for them; other
-    // pads use the d-pad buttons / left stick as before.
+    // Resolve the movement direction as { x, y } each in { -1, 0, 1 }: the
+    // D-pad in any of its layouts (standard buttons 12-15, POV hat, digital
+    // hat pairs — see twin-stick.ts) or the left stick.
     private getMoveDirection(): { x: number; y: number } {
-        if ( this.useFaceButtonAiming )  return this.getHatDirection();
+        const dpad = readDpad( this.gamepad );
 
-        const x = ( this.gamepad.left  || this.gamepad.leftStick.x < -0.1 ) ? -1
-                : ( this.gamepad.right || this.gamepad.leftStick.x >  0.1 ) ?  1 : 0;
-        const y = ( this.gamepad.up    || this.gamepad.leftStick.y < -0.1 ) ? -1
-                : ( this.gamepad.down  || this.gamepad.leftStick.y >  0.1 ) ?  1 : 0;
+        const x = dpad.x !== 0 ? dpad.x
+                : this.gamepad.leftStick.x < -0.1 ? -1
+                : this.gamepad.leftStick.x >  0.1 ?  1 : 0;
+        const y = dpad.y !== 0 ? dpad.y
+                : this.gamepad.leftStick.y < -0.1 ? -1
+                : this.gamepad.leftStick.y >  0.1 ?  1 : 0;
 
         return { x, y };
-    }
-
-    // Decode the d-pad POV hat (axis Player.DPAD_HAT_AXIS) into an x/y direction.
-    // Reads the raw axis value (not getValue(), whose 0.1 threshold would zero the
-    // smallest direction values) and rounds it to one of the 8 hat octants.
-    private getHatDirection(): { x: number; y: number } {
-        const hat = this.gamepad.axes[ Player.DPAD_HAT_AXIS ];
-        if ( !hat )  return { x: 0, y: 0 };
-
-        const v = hat.value;
-
-        // Released/neutral (~1.2857) sits outside the [-1, 1] direction range;
-        // a near-zero value means the axis hasn't reported yet (the smallest real
-        // hat direction is ~0.143). Treat both as "no input".
-        if ( v < -1.05 || v > 1.05 || Math.abs( v ) < 0.05 )  return { x: 0, y: 0 };
-
-        const octant = Math.round( ( v + 1 ) * 3.5 ) & 7;   // 0 = up, clockwise
-
-        return Player.HAT_DIRECTIONS[ octant ];
-    }
-
-    // Map the four face buttons to an 8-way aim vector (combining buttons gives
-    // diagonals), then reuse the thumbstick angle math. Returns null when no
-    // face button is held. Indices come from Player.FACE_AIM.
-    private getFaceButtonAimAngle(): number | null {
-        const buttons = this.gamepad.buttons;
-        const aim     = Player.FACE_AIM;
-
-        const up    = buttons[ aim.up    ]?.pressed ? 1 : 0;
-        const down  = buttons[ aim.down  ]?.pressed ? 1 : 0;
-        const left  = buttons[ aim.left  ]?.pressed ? 1 : 0;
-        const right = buttons[ aim.right ]?.pressed ? 1 : 0;
-
-        return this.coordinatesToRadians( right - left, down - up );
     }
 
     private fireWeapon( weapon: Weapon, aimAngle: number ) {

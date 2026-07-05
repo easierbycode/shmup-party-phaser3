@@ -115,17 +115,23 @@ export function actionsForButton(idx: number): ActionId[] {
 export const ControlsState = { open: false };
 
 // Some pads report non-standard button indices. The Switch-Online SNES pad
-// (id "SNES Controller …", 057e:2017) sends ZR as button 15 — which the W3C
-// standard layout calls "d-pad right" — instead of the standard R2 = 7, so its
-// trigger never matches the default Next-Weapon binding. For SNES pads we alias
-// the repurposed index back to the standard one the bindings use, so the trigger
-// works without remapping (and still follows R2 if the user rebinds it). Gated
-// to SNES pads in Player so a standard pad's real d-pad-right is unaffected.
+// (id "SNES Controller …", 057e:2017) in its Nintendo-HID-order layout sends
+// ZR as button 15 — which the W3C standard layout calls "d-pad right" —
+// instead of the standard R2 = 7, so its trigger never matches the default
+// Next-Weapon binding. For SNES pads we alias the repurposed index back to the
+// standard one the bindings use, so the trigger works without remapping (and
+// still follows R2 if the user rebinds it). Gated to SNES pads in Player so a
+// standard pad's real d-pad-right is unaffected — and gated further to the
+// Nintendo-HID-order layout (recognizable by its ~10 axes with the POV hat at
+// [9]): the same pad's Linux joydev-family layout reports the REAL d-pad on
+// buttons 12-15, where this alias would turn d-pad-right into Next Weapon.
 const SNES_BUTTON_ALIAS: Record<number, number> = {
     15: 7, // ZR → R2 (Next Weapon)
 };
 
-export function aliasSnesButton(idx: number): number {
+export function aliasSnesButton(idx: number, pad?: { axes?: ArrayLike<unknown> }): number {
+    const axesLen = pad && pad.axes ? pad.axes.length : 10;
+    if (axesLen <= 9) return idx;
     return SNES_BUTTON_ALIAS[idx] ?? idx;
 }
 
