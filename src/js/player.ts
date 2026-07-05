@@ -8,7 +8,7 @@ import PacmanBullet from "./pacman-bullet";
 import { Bullet, Weapon } from './weapon-plugin';
 import { BULLET_KILL } from "./weapon-plugin/events";
 import { actionsForButton, aliasSnesButton, ControlsState, lowerTriggerThresholds } from "./controls";
-import { faceAim, isSnesPadId, readDpad, TwinStick } from "./twin-stick";
+import { faceAim, isSnesPadId, readDpad, rightStickIsTrustworthy, TwinStick } from "./twin-stick";
 
 
 export default class Player extends BaseEntity {
@@ -134,12 +134,16 @@ export default class Player extends BaseEntity {
         else if ( move.y > 0 )  this.body.velocity.y = this.speed;
 
         // Aim + fire. A right stick — real, or synthesized by the cmg launcher's
-        // Twin-Stick patch (D-pad → left stick, faces → right stick) — always
-        // takes precedence. Without stick signal, Twin-Stick mode aims with the
-        // face buttons and auto-fires continuously in the last aimed direction
-        // (defaults to up); SNES pads keep that behavior even with the mode off,
-        // since they have no other way to aim.
-        const thumbstickAngle = this.coordinatesToRadians( this.gamepad.rightStick.x, this.gamepad.rightStick.y );
+        // Twin-Stick patch (D-pad → left stick, faces → right stick) — takes
+        // precedence, but only where axes[2]/[3] are actually a stick: on raw
+        // non-standard SNES layouts they can carry the digital D-pad pair (see
+        // rightStickIsTrustworthy). Without stick signal, Twin-Stick mode aims
+        // with the face buttons and auto-fires continuously in the last aimed
+        // direction (defaults to up); SNES pads keep that behavior even with
+        // the mode off, since they have no other way to aim.
+        const thumbstickAngle = rightStickIsTrustworthy( this.gamepad )
+            ? this.coordinatesToRadians( this.gamepad.rightStick.x, this.gamepad.rightStick.y )
+            : null;
 
         if ( thumbstickAngle !== null ) {
             this.rotation = thumbstickAngle + this.orientationOffset;
