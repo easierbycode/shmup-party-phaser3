@@ -15,7 +15,8 @@ export default class BootScene extends Phaser.Scene {
         this.load.setBaseURL(assetPath);
 
         this.load.image('logo', 'assets/images/shmup-party-logo.png');
-        this.load.image('loader', 'assets/images/loader.png');
+        this.load.image('loader-empty', 'assets/images/loader-empty.png');
+        this.load.image('loader-fill', 'assets/images/loader-fill.png');
     }
 
     create() {
